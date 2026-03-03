@@ -1,149 +1,63 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAST Portal | ECS Asbestos</title>
-    <style>
-        :root { --primary: #003366; --accent: #c0392b; --bg: #f4f7f9; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); }
-        .hidden { display: none !important; }
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwarttJ3JBpEyGUGCROHx7ctdpX9xEMj8qrgX48huawx5-xEWtvx55NU3oR-frBxDfcyQ/exec";
+
+// --- 1. THE "AUTO-LOGIN" CHECK ---
+// This runs as soon as the page loads
+window.onload = function() {
+    const isLoggedIn = localStorage.getItem("fast_logged_in");
+    if (isLoggedIn === "true") {
+        showDashboard();
+        fetchData();
+    }
+};
+
+async function handleLogin() {
+    const u = document.getElementById('userInput').value;
+    const p = document.getElementById('passInput').value;
+    const status = document.getElementById('status');
+    
+    status.innerText = "Checking credentials...";
+    
+    try {
+        const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
+        const data = await res.json();
         
-        /* Login Screen */
-        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; }
-        .login-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 340px; text-align: center; }
-        h1 { color: var(--primary); font-size: 2.8rem; margin: 0 0 10px 0; letter-spacing: 5px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
-        button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 15px; }
-        button:hover { background: #002244; }
-        
-        /* Dashboard */
-        header { background: var(--primary); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-        .controls { padding: 15px 25px; background: white; border-bottom: 1px solid #ddd; display: flex; gap: 15px; align-items: center; }
-        #searchBar { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 6px; }
-        
-        /* Table Layout */
-        .table-wrapper { overflow: auto; height: calc(100vh - 145px); background: white; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        th, td { border: 1px solid #eee; padding: 10px; text-align: left; white-space: nowrap; }
-        th { background: #f8f9fa; position: sticky; top: 0; z-index: 10; color: var(--primary); font-weight: bold; text-transform: uppercase; }
-        tr:nth-child(even) { background: #f9f9f9; }
-        tr:hover { background: #edf2f7; }
-
-        /* Loader */
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 15px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
-</head>
-<body>
-
-    <div id="login-screen">
-        <div class="login-card">
-            <h1>FAST</h1>
-            <p style="color:#666; font-size: 0.9rem;">Field Analysis & Storage Tracking</p>
-            <input type="text" id="userInput" placeholder="Email Address">
-            <input type="password" id="passInput" placeholder="Password">
-            <button id="loginBtn" onclick="handleLogin()">SIGN IN</button>
-            <div id="loginLoader" class="hidden"><div class="spinner"></div></div>
-            <p id="status" style="color: red; font-size: 0.85rem; margin-top: 15px;"></p>
-        </div>
-    </div>
-
-    <div id="dashboard" class="hidden">
-        <header>
-            <div style="font-weight: bold; font-size: 1.4rem; letter-spacing: 1px;">FAST PORTAL</div>
-            <button onclick="location.reload()" style="background: var(--accent); color: white; border:none; padding: 6px 15px; border-radius: 4px; cursor:pointer;">Logout</button>
-        </header>
-        <div class="controls">
-            <input type="text" id="searchBar" onkeyup="filterTable()" placeholder="Search by Claim #, Customer, Location, or Status...">
-        </div>
-        <div class="table-wrapper" id="table-output">
-            <div style="padding: 40px; text-align: center;"><div class="spinner"></div><p>Pulling Xcelerate Records...</p></div>
-        </div>
-    </div>
-
-    <script>
-        // UPDATED WEB APP URL
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwarttJ3JBpEyGUGCROHx7ctdpX9xEMj8qrgX48huawx5-xEWtvx55NU3oR-frBxDfcyQ/exec";
-
-        async function handleLogin() {
-            const u = document.getElementById('userInput').value;
-            const p = document.getElementById('passInput').value;
-            const status = document.getElementById('status');
-            const btn = document.getElementById('loginBtn');
-            const loader = document.getElementById('loginLoader');
+        if(data.result === "success") {
+            // SAVE the session in the browser's memory
+            localStorage.setItem("fast_logged_in", "true");
+            localStorage.setItem("fast_user_email", u);
             
-            if(!u || !p) { status.innerText = "Please fill in all fields."; return; }
-
-            status.innerText = "";
-            btn.classList.add('hidden');
-            loader.classList.remove('hidden');
-            
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
-                const data = await res.json();
-                
-                if(data.result === "success") {
-                    document.getElementById('login-screen').classList.add('hidden');
-                    document.getElementById('dashboard').classList.remove('hidden');
-                    fetchData();
-                } else {
-                    status.innerText = data.message;
-                    btn.classList.remove('hidden');
-                    loader.classList.add('hidden');
-                }
-            } catch(e) {
-                status.innerText = "Connection failed. Please check your internet or Script URL.";
-                btn.classList.remove('hidden');
-                loader.classList.add('hidden');
-            }
+            showDashboard();
+            fetchData();
+        } else {
+            status.innerText = data.message;
         }
+    } catch(e) {
+        status.innerText = "Connection Error.";
+    }
+}
 
-        async function fetchData() {
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=getData`);
-                const json = await res.json();
-                if(json.result === "success") {
-                    renderTable(json.data);
-                }
-            } catch(e) {
-                document.getElementById('table-output').innerHTML = "<p style='padding:20px; color:red;'>Failed to load Xcelerate Data.</p>";
-            }
-        }
+// --- 2. THE LOGOUT LOGIC ---
+function logout() {
+    // Clear the cabinet!
+    localStorage.removeItem("fast_logged_in");
+    localStorage.removeItem("fast_user_email");
+    location.reload(); // Refresh to show login screen again
+}
 
-        function renderTable(dataArray) {
-            if (!dataArray || dataArray.length === 0) return;
-            
-            const headers = dataArray[0];
-            const rows = dataArray.slice(1);
-            
-            let html = `<table id="mainTable"><thead><tr>`;
-            headers.forEach(h => html += `<th>${h}</th>`);
-            html += `</tr></thead><tbody>`;
-            
-            rows.forEach(row => {
-                html += `<tr>`;
-                row.forEach(cell => {
-                    // Formats date or null values cleanly
-                    let val = cell === "" ? "" : cell;
-                    html += `<td>${val}</td>`;
-                });
-                html += `</tr>`;
-            });
-            html += `</tbody></table>`;
-            document.getElementById('table-output').innerHTML = html;
-        }
+function showDashboard() {
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    document.getElementById('user-display').innerText = localStorage.getItem("fast_user_email") || "User";
+}
 
-        function filterTable() {
-            const filter = document.getElementById("searchBar").value.toUpperCase();
-            const table = document.getElementById("mainTable");
-            const tr = table.getElementsByTagName("tr");
+async function fetchData() {
+    try {
+        const res = await fetch(`${SCRIPT_URL}?action=getData`);
+        const json = await res.json();
+        renderTable(json.data);
+    } catch(e) {
+        console.error("Data load failed");
+    }
+}
 
-            for (let i = 1; i < tr.length; i++) {
-                let rowText = tr[i].innerText.toUpperCase();
-                tr[i].style.display = rowText.includes(filter) ? "" : "none";
-            }
-        }
-    </script>
-</body>
-</html>
+// ... keep your renderTable and filterTable functions the same ...

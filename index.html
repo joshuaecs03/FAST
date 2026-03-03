@@ -2,73 +2,95 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>FAST Portal</title>
+    <title>FAST Portal | ECS Asbestos</title>
     <style>
-        :root { --primary: #003366; }
-        body { font-family: sans-serif; background: #f0f2f5; margin: 0; text-align: center; }
+        :root { --primary: #003366; --accent: #c0392b; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: #f0f2f5; }
         .hidden { display: none !important; }
-        .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 300px; margin: 100px auto; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; }
-        header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; }
-        .table-wrapper { padding: 20px; overflow: auto; height: 80vh; background: white; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        
+        /* Login Container */
+        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .login-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 320px; text-align: center; }
+        h1 { color: var(--primary); font-size: 2.5rem; margin: 0 0 20px 0; letter-spacing: 4px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        
+        /* Dashboard */
+        header { background: var(--primary); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
+        .controls { padding: 15px 25px; background: white; border-bottom: 1px solid #ddd; display: flex; gap: 10px; }
+        #searchBar { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .table-wrapper { overflow: auto; height: calc(100vh - 140px); background: white; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
         th, td { border: 1px solid #eee; padding: 8px; text-align: left; white-space: nowrap; }
-        th { background: #f2f2f2; position: sticky; top: 0; }
+        th { background: #f8f9fa; position: sticky; top: 0; z-index: 10; font-weight: 600; }
+        tr:hover { background: #f1f5f9; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
-        <div class="card">
+        <div class="login-card">
             <h1>FAST</h1>
-            <input type="text" id="user" placeholder="Username">
-            <input type="password" id="pass" placeholder="Password">
-            <button onclick="login()">Login</button>
-            <p id="status" style="color: red;"></p>
+            <p>ECS Asbestos Data Portal</p>
+            <input type="text" id="userInput" placeholder="Email Address">
+            <input type="password" id="passInput" placeholder="Password">
+            <button onclick="handleLogin()">LOGIN</button>
+            <p id="status" style="color: red; font-size: 14px; margin-top: 15px;"></p>
         </div>
     </div>
 
     <div id="dashboard" class="hidden">
         <header>
             <strong>FAST PORTAL</strong>
-            <button onclick="location.reload()" style="width:auto; padding:5px 10px;">Logout</button>
+            <button onclick="location.reload()" style="width:auto; padding: 5px 15px; background: var(--accent);">Logout</button>
         </header>
-        <div class="table-wrapper" id="output">Loading Data...</div>
+        <div class="controls">
+            <input type="text" id="searchBar" onkeyup="filterTable()" placeholder="Search records by name, job number, or status...">
+        </div>
+        <div class="table-wrapper" id="table-output">
+            <p style="padding: 20px;">Loading Xcelerate data...</p>
+        </div>
     </div>
 
     <script>
-        const URL = "YOUR_EXEC_URL_HERE";
+        // PASTE YOUR /exec URL HERE
+        const SCRIPT_URL = "https://script.google.com/a/macros/ecs-asbestos.com/s/AKfycbwarttJ3JBpEyGUGCROHx7ctdpX9xEMj8qrgX48huawx5-xEWtvx55NU3oR-frBxDfcyQ/exec";
 
-        async function login() {
-            const u = document.getElementById('user').value;
-            const p = document.getElementById('pass').value;
+        async function handleLogin() {
+            const u = document.getElementById('userInput').value;
+            const p = document.getElementById('passInput').value;
             const status = document.getElementById('status');
             
-            status.innerText = "Checking...";
+            status.style.color = "blue";
+            status.innerText = "Checking credentials...";
             
             try {
-                const res = await fetch(`${URL}?action=login&username=${u}&password=${p}`);
+                const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
                 const data = await res.json();
                 
                 if(data.result === "success") {
                     document.getElementById('login-screen').classList.add('hidden');
                     document.getElementById('dashboard').classList.remove('hidden');
-                    loadData();
+                    fetchData();
                 } else {
+                    status.style.color = "red";
                     status.innerText = data.message;
                 }
             } catch(e) {
-                status.innerText = "Connection Error";
+                status.style.color = "red";
+                status.innerText = "Connection Error. Check Script URL.";
             }
         }
 
-        async function loadData() {
-            const res = await fetch(`${URL}?action=getData`);
+        async function fetchData() {
+            const res = await fetch(`${SCRIPT_URL}?action=getData`);
             const json = await res.json();
-            const data = json.data;
-            
-            let html = `<table><thead><tr>`;
+            renderTable(json.data);
+        }
+
+        function renderTable(data) {
+            if (!data || data.length === 0) return;
+            let html = `<table id="dataTable"><thead><tr>`;
             data[0].forEach(h => html += `<th>${h}</th>`);
             html += `</tr></thead><tbody>`;
             data.slice(1).forEach(row => {
@@ -77,7 +99,15 @@
                 html += `</tr>`;
             });
             html += `</tbody></table>`;
-            document.getElementById('output').innerHTML = html;
+            document.getElementById('table-output').innerHTML = html;
+        }
+
+        function filterTable() {
+            const filter = document.getElementById("searchBar").value.toUpperCase();
+            const rows = document.getElementById("dataTable").getElementsByTagName("tr");
+            for (let i = 1; i < rows.length; i++) {
+                rows[i].style.display = rows[i].innerText.toUpperCase().includes(filter) ? "" : "none";
+            }
         }
     </script>
 </body>

@@ -11,10 +11,13 @@
         body { font-family: 'Inter', sans-serif; margin: 0; background: var(--ecs-bg); color: var(--ecs-dark); height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
 
-        /* AUTH UI */
+        /* AUTH UI - BRANDED LOGO */
         #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: #f3f4f6; }
         .login-card { background: white; padding: 60px; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1); width: 340px; text-align: center; }
-        .login-card h1 { font-family: 'Montserrat', sans-serif; font-size: 3.2rem; margin: 0 0 40px 0; letter-spacing: 8px; color: var(--ecs-dark); }
+        
+        .brand-logo { font-family: 'Montserrat', sans-serif; font-size: 3.2rem; margin: 0 0 40px 0; letter-spacing: 8px; font-weight: 700; color: var(--ecs-dark); }
+        .brand-logo span { color: var(--ecs-orange); }
+
         input { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid var(--ecs-border); border-radius: 8px; box-sizing: border-box; outline: none; font-size: 14px; }
         input:focus { border-color: var(--ecs-orange); }
         button.primary { width: 100%; padding: 14px; background: var(--ecs-orange); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; text-transform: uppercase; margin-top: 10px; }
@@ -27,7 +30,6 @@
         /* DASHBOARD */
         #dashboard { display: flex; flex-direction: column; height: 100vh; }
         header { background: white; padding: 0 30px; height: 70px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
-        .brand { font-family: 'Montserrat', sans-serif; font-size: 1.5rem; letter-spacing: 4px; font-weight: 700; }
         
         .search-area { padding: 30px; background: white; border-bottom: 1px solid var(--ecs-border); }
         #searchBar { width: 100%; max-width: 900px; padding: 18px 25px; border: 1px solid var(--ecs-border); border-radius: 50px; font-size: 16px; display: block; margin: 0 auto; outline: none; transition: 0.3s; }
@@ -51,7 +53,7 @@
 
     <div id="login-screen">
         <div class="login-card">
-            <h1>FAST</h1>
+            <div class="brand-logo">F<span>A</span>ST</div>
             <input type="text" id="userInput" placeholder="Email Address">
             <input type="password" id="passInput" placeholder="Password">
             <button class="primary" onclick="handleLogin()">Log In</button>
@@ -62,12 +64,12 @@
     <div id="sync-overlay" class="hidden">
         <div class="spinner"></div>
         <h2 style="font-family:Montserrat; color:var(--ecs-orange); margin-top:20px; letter-spacing:4px;">SYNCING</h2>
-        <p style="font-size:12px; color:#666;">Preparing Xcelerate data for instant access...</p>
+        <p style="font-size:12px; color:#666;">Optimizing Xcelerate database for instant access...</p>
     </div>
 
     <div id="dashboard" class="hidden">
         <header>
-            <div class="brand">F<span style="color:var(--ecs-orange)">A</span>ST</div>
+            <div class="brand-logo" style="font-size: 1.5rem; margin: 0; letter-spacing: 4px;">F<span>A</span>ST</div>
             <button class="btn-logout" onclick="logout()">LOGOUT</button>
         </header>
         
@@ -90,28 +92,29 @@
         async function handleLogin() {
             const u = document.getElementById('userInput').value;
             const p = document.getElementById('passInput').value;
+            const status = document.getElementById('loginStatus');
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
                 const data = await res.json();
                 if(data.result === "success") {
                     localStorage.setItem("fast_active", "true");
                     initPortal();
-                } else { document.getElementById('loginStatus').innerText = "INVALID CREDENTIALS"; }
-            } catch(e) { alert("Server Error during Auth"); }
+                } else { status.innerText = "INVALID CREDENTIALS"; }
+            } catch(e) { status.innerText = "SERVER ERROR"; }
         }
 
         async function initPortal() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('sync-overlay').classList.remove('hidden');
             try {
-                // Fetching EVERYTHING for local caching
+                // Fetch full dataset for local memory caching
                 const res = await fetch(`${SCRIPT_URL}?action=search&q=`); 
                 const json = await res.json();
                 HEADERS = json.headers;
                 CACHE_DATA = json.data;
                 document.getElementById('sync-overlay').classList.add('hidden');
                 document.getElementById('dashboard').classList.remove('hidden');
-            } catch(e) { alert("Data Sync Failed. Check your internet."); }
+            } catch(e) { alert("Data Sync Failed."); }
         }
 
         function instantSearch() {
@@ -123,7 +126,7 @@
                 return; 
             }
 
-            // High Speed Local Filtering
+            // Local filtering for speed
             const filtered = CACHE_DATA.filter(r => r.join(" ").toUpperCase().includes(q)).slice(0, 100);
             render(filtered);
         }

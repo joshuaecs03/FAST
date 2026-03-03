@@ -3,103 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ECS Claims Manager</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Xcelerate Login</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 350px; }
+        h2 { color: #333; text-align: center; margin-bottom: 1.5rem; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        button:hover { background: #34495e; }
+        #message { color: red; text-align: center; margin-top: 10px; font-size: 14px; }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen pb-20">
+<body>
 
-    <nav class="bg-[#D4631E] text-white p-4 shadow-lg sticky top-0 z-50">
-        <div class="max-w-md mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold tracking-tight">ECS Dashboard</h1>
-            <button onclick="fetchData()" class="p-2 hover:bg-orange-700 rounded-full transition">
-                <i data-lucide="refresh-cw" class="w-6 h-6"></i>
-            </button>
-        </div>
-    </nav>
+<div class="login-card">
+    <h2>Xcelerate Portal</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <div id="message"></div>
+</div>
 
-    <main class="max-w-md mx-auto p-4 space-y-4" id="claims-container">
-        <div id="loading" class="text-center py-20 text-gray-500">
-            <div class="animate-spin mb-2">🌀</div>
-            Loading your claims...
-        </div>
-    </main>
+<script>
+    // PASTE YOUR GOOGLE DEPLOYMENT URL HERE
+    const WEB_APP_URL = "YOUR_APPS_SCRIPT_URL_HERE";
 
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
-        <div class="max-w-md mx-auto">
-            <button onclick="runAutomation()" id="btn-automate" class="w-full bg-[#D4631E] text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 active:scale-95 transition">
-                <i data-lucide="mail" class="w-5 h-5"></i>
-                Run Automation Engine
-            </button>
-        </div>
-    </div>
+    async function login() {
+        const user = document.getElementById('username').value;
+        const pass = document.getElementById('password').value;
+        const msg = document.getElementById('message');
 
-    <script>
-        const API_URL = 'YOUR_WEB_APP_URL'; // PASTE YOUR GOOGLE SCRIPT URL HERE
+        msg.innerText = "Authenticating...";
 
-        async function fetchData() {
-            const container = document.getElementById('claims-container');
-            try {
-                const response = await fetch(`${API_URL}?action=getData`);
-                const data = await response.json();
-                renderClaims(data);
-            } catch (err) {
-                container.innerHTML = `<div class="text-red-500 p-4">Error loading data. Check console.</div>`;
-            }
-        }
-
-        function renderClaims(rows) {
-            const container = document.getElementById('claims-container');
-            container.innerHTML = '';
-            
-            rows.forEach(row => {
-                const [fileNum, fileName, claimNum, invDate, , adjName, , state, , status] = row;
-                if(!fileNum) return;
-
-                const card = document.createElement('div');
-                card.className = "bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-2";
-                card.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <span class="text-xs font-bold text-gray-400 uppercase">#${fileNum}</span>
-                        <span class="px-2 py-1 rounded-md text-[10px] font-bold ${status.includes('Paid') ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}">
-                            ${status || 'PENDING'}
-                        </span>
-                    </div>
-                    <h3 class="font-bold text-gray-800 text-lg leading-tight">${fileName}</h3>
-                    <div class="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                        <div class="flex items-center gap-1"><i data-lucide="hash" class="w-3 h-3"></i> ${claimNum}</div>
-                        <div class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> ${state}</div>
-                        <div class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> ${invDate}</div>
-                        <div class="flex items-center gap-1"><i data-lucide="user" class="w-3 h-3"></i> ${adjName || 'No Adj.'}</div>
-                    </div>
-                `;
-                container.appendChild(card);
+        try {
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Essential for Google Apps Script redirects
+                body: JSON.stringify({ username: user, password: pass })
             });
-            lucide.createIcons();
-        }
 
-        async function runAutomation() {
-            const btn = document.getElementById('btn-automate');
-            btn.disabled = true;
-            btn.innerText = "Processing...";
+            // Since 'no-cors' doesn't let us read the JSON response easily, 
+            // for a "Low Code" simple login, we usually use a different fetch approach 
+            // or redirect based on a successful hit. 
             
-            try {
-                const response = await fetch(`${API_URL}?action=runAutomation`);
-                const result = await response.text();
-                alert("Server Says: " + result);
-                fetchData();
-            } catch (err) {
-                alert("Failed to trigger script.");
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `<i data-lucide="mail" class="w-5 h-5"></i> Run Automation Engine`;
-                lucide.createIcons();
-            }
-        }
+            // For 5 users, the most reliable simple way is to use a standard GET:
+            const authUrl = `${WEB_APP_URL}?username=${user}&password=${pass}`;
+            const check = await fetch(authUrl);
+            const result = await check.json();
 
-        // Initialize
-        fetchData();
-        lucide.createIcons();
-    </script>
+            if(result.result === "success") {
+                localStorage.setItem("userRole", result.role);
+                alert("Login Successful! Welcome " + user);
+                // window.location.href = "dashboard.html"; 
+            } else {
+                msg.innerText = "Invalid username or password.";
+            }
+        } catch (error) {
+            msg.innerText = "Error connecting to backend.";
+            console.error(error);
+        }
+    }
+</script>
 </body>
 </html>

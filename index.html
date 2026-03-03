@@ -1,68 +1,82 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xcelerate Login</title>
+    <title>Xcelerate Data Portal</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 350px; }
-        h2 { color: #333; text-align: center; margin-bottom: 1.5rem; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: 0.3s; }
-        button:hover { background: #34495e; }
-        #message { color: red; text-align: center; margin-top: 10px; font-size: 14px; }
+        :root { --primary: #2c3e50; --accent: #3498db; }
+        body { font-family: sans-serif; margin: 0; background: #f4f4f4; }
+        .hidden { display: none; }
+        /* Login Styles */
+        #login-container { height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .card { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 300px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: var(--primary); color: white; border: none; cursor: pointer; }
+        /* Dashboard Styles */
+        nav { background: var(--primary); color: white; padding: 1rem; display: flex; justify-content: space-between; }
+        .container { padding: 20px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; background: white; font-size: 12px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; white-space: nowrap; }
+        th { background: #eee; position: sticky; top: 0; }
     </style>
 </head>
 <body>
 
-<div class="login-card">
-    <h2>Xcelerate Portal</h2>
-    <input type="text" id="username" placeholder="Username">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-    <div id="message"></div>
-</div>
+    <div id="login-container">
+        <div class="card">
+            <h2>Xcelerate Login</h2>
+            <input type="text" id="user" placeholder="Username">
+            <input type="password" id="pass" placeholder="Password">
+            <button onclick="handleLogin()">Sign In</button>
+            <p id="msg" style="color:red"></p>
+        </div>
+    </div>
 
-<script>
-    // PASTE YOUR GOOGLE DEPLOYMENT URL HERE
-    const WEB_APP_URL = "YOUR_APPS_SCRIPT_URL_HERE";
+    <div id="dashboard" class="hidden">
+        <nav>
+            <span>Xcelerate Data Portal</span>
+            <button onclick="location.reload()" style="width:auto; padding: 5px 15px;">Logout</button>
+        </nav>
+        <div class="container">
+            <h3>Active Records</h3>
+            <div id="table-wrapper">Loading data...</div>
+        </div>
+    </div>
 
-    async function login() {
-        const user = document.getElementById('username').value;
-        const pass = document.getElementById('password').value;
-        const msg = document.getElementById('message');
+    <script>
+        const SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_URL_HERE";
 
-        msg.innerText = "Authenticating...";
+        async function handleLogin() {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            const res = await fetch(`${SCRIPT_URL}?action=login&username=${u}&password=${p}`);
+            const data = await res.json();
 
-        try {
-            const response = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                mode: 'no-cors', // Essential for Google Apps Script redirects
-                body: JSON.stringify({ username: user, password: pass })
-            });
-
-            // Since 'no-cors' doesn't let us read the JSON response easily, 
-            // for a "Low Code" simple login, we usually use a different fetch approach 
-            // or redirect based on a successful hit. 
-            
-            // For 5 users, the most reliable simple way is to use a standard GET:
-            const authUrl = `${WEB_APP_URL}?username=${user}&password=${pass}`;
-            const check = await fetch(authUrl);
-            const result = await check.json();
-
-            if(result.result === "success") {
-                localStorage.setItem("userRole", result.role);
-                alert("Login Successful! Welcome " + user);
-                // window.location.href = "dashboard.html"; 
+            if(data.result === "success") {
+                document.getElementById('login-container').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                loadData();
             } else {
-                msg.innerText = "Invalid username or password.";
+                document.getElementById('msg').innerText = "Login Failed";
             }
-        } catch (error) {
-            msg.innerText = "Error connecting to backend.";
-            console.error(error);
         }
-    }
-</script>
+
+        async function loadData() {
+            const res = await fetch(`${SCRIPT_URL}?action=getData`);
+            const data = await res.json();
+            
+            let html = `<table><thead><tr>`;
+            // Get headers from first row keys
+            Object.keys(data[0]).forEach(key => html += `<th>${key}</th>`);
+            html += `</tr></thead><tbody>`;
+            
+            data.forEach(row => {
+                html += `<tr>`;
+                Object.values(row).forEach(val => html += `<td>${val || ''}</td>`);
+                html += `</tr>`;
+            });
+            html += `</tbody></table>`;
+            document.getElementById('table-wrapper').innerHTML = html;
+        }
+    </script>
 </body>
 </html>

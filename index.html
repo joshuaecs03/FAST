@@ -1,63 +1,206 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwarttJ3JBpEyGUGCROHx7ctdpX9xEMj8qrgX48huawx5-xEWtvx55NU3oR-frBxDfcyQ/exec";
-
-// --- 1. THE "AUTO-LOGIN" CHECK ---
-// This runs as soon as the page loads
-window.onload = function() {
-    const isLoggedIn = localStorage.getItem("fast_logged_in");
-    if (isLoggedIn === "true") {
-        showDashboard();
-        fetchData();
-    }
-};
-
-async function handleLogin() {
-    const u = document.getElementById('userInput').value;
-    const p = document.getElementById('passInput').value;
-    const status = document.getElementById('status');
-    
-    status.innerText = "Checking credentials...";
-    
-    try {
-        const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
-        const data = await res.json();
-        
-        if(data.result === "success") {
-            // SAVE the session in the browser's memory
-            localStorage.setItem("fast_logged_in", "true");
-            localStorage.setItem("fast_user_email", u);
-            
-            showDashboard();
-            fetchData();
-        } else {
-            status.innerText = data.message;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAST | ECS Asbestos</title>
+    <style>
+        /* ECS BRANDING COLORS */
+        :root { 
+            --ecs-orange: #D4631E; 
+            --ecs-dark: #333333;
+            --ecs-gray: #fcfcfc;
+            --pure-red: #ff0000;
         }
-    } catch(e) {
-        status.innerText = "Connection Error.";
-    }
-}
 
-// --- 2. THE LOGOUT LOGIC ---
-function logout() {
-    // Clear the cabinet!
-    localStorage.removeItem("fast_logged_in");
-    localStorage.removeItem("fast_user_email");
-    location.reload(); // Refresh to show login screen again
-}
+        body { 
+            font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif; 
+            margin: 0; 
+            background-color: #f4f4f4; 
+            color: var(--ecs-dark);
+        }
 
-function showDashboard() {
-    document.getElementById('login-screen').classList.add('hidden');
-    document.getElementById('dashboard').classList.remove('hidden');
-    document.getElementById('user-display').innerText = localStorage.getItem("fast_user_email") || "User";
-}
+        .hidden { display: none !important; }
 
-async function fetchData() {
-    try {
-        const res = await fetch(`${SCRIPT_URL}?action=getData`);
-        const json = await res.json();
-        renderTable(json.data);
-    } catch(e) {
-        console.error("Data load failed");
-    }
-}
+        /* LOGIN SCREEN - Mimicking Report Summary Box */
+        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .login-card { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 2px; 
+            border: 1px solid #eee;
+            border-top: 4px solid var(--ecs-orange);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            width: 340px; 
+            text-align: center; 
+        }
+        h1 { color: var(--ecs-orange); font-size: 2.2rem; margin: 0 0 10px 0; letter-spacing: 3px; font-weight: 700; }
+        input { 
+            width: 100%; padding: 12px; margin: 10px 0; 
+            border: 1px solid #f0f0f0; border-radius: 0; 
+            background: var(--ecs-gray); font-size: 14px; 
+        }
+        button { 
+            width: 100%; padding: 12px; 
+            background: var(--ecs-orange); color: white; 
+            border: none; cursor: pointer; font-weight: 700; 
+            letter-spacing: 1.5px; text-transform: uppercase; margin-top: 15px; 
+        }
+        button:hover { opacity: 0.9; }
 
-// ... keep your renderTable and filterTable functions the same ...
+        /* DASHBOARD - Mimicking PDF Breakdown */
+        header { 
+            background: white; color: var(--ecs-dark); 
+            padding: 15px 25px; display: flex; justify-content: space-between; 
+            align-items: center; border-bottom: 2px solid var(--ecs-orange);
+        }
+        .controls { 
+            padding: 12px 25px; background: var(--ecs-gray); 
+            border-bottom: 1px solid #eee; display: flex; gap: 15px; 
+        }
+        #searchBar { 
+            flex: 1; padding: 10px; border: 1px solid #eee; 
+            font-size: 13px; outline: none;
+        }
+
+        /* TABLE - Mimicking "Full Project Breakdown" style */
+        .table-wrapper { overflow: auto; height: calc(100vh - 130px); background: white; }
+        table { width: 100%; border-collapse: collapse; font-size: 10px; }
+        th { 
+            background-color: #fafafa; color: #999; 
+            font-size: 9px; text-transform: uppercase; 
+            padding: 10px; border: 1px solid #eee;
+            position: sticky; top: 0; z-index: 10;
+        }
+        td { 
+            border: 1px solid #f0f0f0; padding: 8px; 
+            text-align: center; color: #333; 
+        }
+        tr:hover { background-color: #fcfcfc; }
+        
+        /* Highlighting missing data like the script */
+        .missing { color: var(--pure-red); font-weight: bold; }
+
+        .spinner { 
+            border: 3px solid #f3f3f3; border-top: 3px solid var(--ecs-orange); 
+            border-radius: 50%; width: 24px; height: 24px; 
+            animation: spin 1s linear infinite; margin: auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-card">
+            <h1>FAST</h1>
+            <p style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Action Item Portal</p>
+            <input type="text" id="userInput" placeholder="Email Address">
+            <input type="password" id="passInput" placeholder="Password">
+            <button id="loginBtn" onclick="handleLogin()">Sign In</button>
+            <div id="loginLoader" class="hidden"><div class="spinner"></div></div>
+            <p id="status" style="color: var(--pure-red); font-size: 11px; margin-top: 15px;"></p>
+        </div>
+    </div>
+
+    <div id="dashboard" class="hidden">
+        <header>
+            <div style="font-weight: 700; color: var(--ecs-orange); font-size: 1.2rem;">FAST PORTAL</div>
+            <div id="user-display" style="font-size: 10px; color: #666; font-weight: bold;"></div>
+            <button onclick="logout()" style="width:auto; padding: 5px 12px; font-size: 10px; background: #666;">Logout</button>
+        </header>
+        
+        <div class="controls">
+            <input type="text" id="searchBar" onkeyup="filterTable()" placeholder="Filter records by any field...">
+        </div>
+
+        <div class="table-wrapper" id="table-output">
+            <div style="padding: 50px; text-align: center;"><div class="spinner"></div></div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwarttJ3JBpEyGUGCROHx7ctdpX9xEMj8qrgX48huawx5-xEWtvx55NU3oR-frBxDfcyQ/exec";
+
+        window.onload = function() {
+            if (localStorage.getItem("fast_logged_in") === "true") {
+                showDashboard();
+                fetchData();
+            }
+        };
+
+        async function handleLogin() {
+            const u = document.getElementById('userInput').value;
+            const p = document.getElementById('passInput').value;
+            const status = document.getElementById('status');
+            
+            status.innerText = "VERIFYING...";
+            
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
+                const data = await res.json();
+                
+                if(data.result === "success") {
+                    localStorage.setItem("fast_logged_in", "true");
+                    localStorage.setItem("fast_user_email", u);
+                    showDashboard();
+                    fetchData();
+                } else {
+                    status.innerText = "INVALID CREDENTIALS";
+                }
+            } catch(e) {
+                status.innerText = "CONNECTION ERROR";
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem("fast_logged_in");
+            location.reload();
+        }
+
+        function showDashboard() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('user-display').innerText = localStorage.getItem("fast_user_email").toUpperCase();
+        }
+
+        async function fetchData() {
+            const res = await fetch(`${SCRIPT_URL}?action=getData`);
+            const json = await res.json();
+            renderTable(json.data);
+        }
+
+        function renderTable(dataArray) {
+            if (!dataArray || dataArray.length === 0) return;
+            const headers = dataArray[0];
+            const rows = dataArray.slice(1);
+            
+            let html = `<table id="mainTable"><thead><tr>`;
+            headers.forEach(h => html += `<th>${h}</th>`);
+            html += `</tr></thead><tbody>`;
+            
+            rows.forEach(row => {
+                html += `<tr>`;
+                row.forEach(cell => {
+                    // Mimic the "styleMissing" logic from your script
+                    let content = (!cell || cell.toString().trim() === "") 
+                        ? `<span class="missing">MISSING</span>` 
+                        : cell;
+                    html += `<td>${content}</td>`;
+                });
+                html += `</tr>`;
+            });
+            html += `</tbody></table>`;
+            document.getElementById('table-output').innerHTML = html;
+        }
+
+        function filterTable() {
+            const filter = document.getElementById("searchBar").value.toUpperCase();
+            const rows = document.getElementById("mainTable").getElementsByTagName("tr");
+            for (let i = 1; i < rows.length; i++) {
+                rows[i].style.display = rows[i].innerText.toUpperCase().includes(filter) ? "" : "none";
+            }
+        }
+    </script>
+</body>
+</html>

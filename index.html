@@ -3,25 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAST - ECS Asbestos Portal</title>
+    <title>FAST - ECS Asbestos</title>
     <style>
         :root { --primary: #003366; --accent: #c0392b; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f4f7f9; }
         .hidden { display: none !important; }
         
-        /* Login Screen */
         #login-container { height: 100vh; display: flex; justify-content: center; align-items: center; flex-direction: column; }
         .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; }
-        h1 { color: var(--primary); font-size: 3rem; margin: 0; letter-spacing: 5px; }
-        .btn-sso { background: #4285F4; color: white; border: none; padding: 15px 30px; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 1rem; }
         
-        /* Dashboard */
         header { background: var(--primary); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
-        .table-wrapper { padding: 20px; overflow: auto; height: calc(100vh - 100px); }
+        .table-wrapper { padding: 20px; overflow: auto; height: calc(100vh - 80px); }
         table { width: 100%; border-collapse: collapse; background: white; font-size: 11px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; white-space: nowrap; }
-        th { background: #f2f2f2; position: sticky; top: 0; z-index: 10; }
-        tr:hover { background: #f9f9f9; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; white-space: nowrap; }
+        th { background: #eee; position: sticky; top: 0; }
+        
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 2s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -29,9 +27,10 @@
     <div id="login-container">
         <div class="card">
             <h1>FAST</h1>
-            <p>ECS Asbestos Field Analysis & Storage Tracking</p>
-            <button class="btn-sso" onclick="startSSO()">Sign in with ECS Google Account</button>
-            <p id="status" style="margin-top: 20px; color: #666;"></p>
+            <p>Field Analysis & Storage Tracking</p>
+            <button id="entryBtn" style="padding:15px 30px; cursor:pointer;" onclick="enterPortal()">Enter FAST Portal</button>
+            <div id="loader" class="hidden"><div class="loader"></div><p>Verifying ECS Credentials...</p></div>
+            <p id="status" style="margin-top: 20px; color: red;"></p>
         </div>
     </div>
 
@@ -40,19 +39,21 @@
             <div style="font-weight: bold; font-size: 1.5rem;">FAST PORTAL</div>
             <div id="user-info"></div>
         </header>
-        <div class="table-wrapper" id="table-output">
-            <p>Fetching your data from Xcelerate...</p>
-        </div>
+        <div class="table-wrapper" id="table-output"></div>
     </div>
 
     <script>
-        // Your specific ECS Asbestos Web App URL
         const SCRIPT_URL = "https://script.google.com/a/macros/ecs-asbestos.com/s/AKfycbwarttJ3JBpEyGUGCROHx7ctdpX9xEMj8qrgX48huawx5-xEWtvx55NU3oR-frBxDfcyQ/exec";
 
-        async function startSSO() {
+        async function enterPortal() {
+            const btn = document.getElementById('entryBtn');
+            const loader = document.getElementById('loader');
             const status = document.getElementById('status');
-            status.innerText = "Authenticating...";
             
+            btn.classList.add('hidden');
+            loader.classList.remove('hidden');
+            status.innerText = "";
+
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=getData`);
                 const result = await response.json();
@@ -60,34 +61,26 @@
                 if (result.result === "success") {
                     document.getElementById('login-container').classList.add('hidden');
                     document.getElementById('dashboard').classList.remove('hidden');
-                    document.getElementById('user-info').innerText = `${result.user} (${result.role})`;
-                    renderXcelerateData(result.data);
+                    document.getElementById('user-info').innerText = result.user;
+                    renderTable(result.data);
                 } else {
-                    status.style.color = "red";
-                    status.innerText = result.message;
+                    throw new Error(result.message);
                 }
             } catch (err) {
-                status.style.color = "red";
-                status.innerText = "Error: Please ensure you are logged into your @ecs-asbestos.com account.";
+                loader.classList.add('hidden');
+                btn.classList.remove('hidden');
+                status.innerHTML = "Access Denied. Ensure you are logged into @ecs-asbestos.com";
                 console.error(err);
             }
         }
 
-        function renderXcelerateData(data) {
-            if (!data || data.length === 0) {
-                document.getElementById('table-output').innerHTML = "No data found.";
-                return;
-            }
-            
+        function renderTable(data) {
             let html = `<table><thead><tr>`;
-            Object.keys(data[0]).forEach(key => {
-                html += `<th>${key.replace(/_/g, ' ')}</th>`;
-            });
+            Object.keys(data[0]).forEach(k => html += `<th>${k}</th>`);
             html += `</tr></thead><tbody>`;
-            
             data.forEach(row => {
                 html += `<tr>`;
-                Object.values(row).forEach(val => html += `<td>${val || ''}</td>`);
+                Object.values(row).forEach(v => html += `<td>${v || ''}</td>`);
                 html += `</tr>`;
             });
             html += `</tbody></table>`;

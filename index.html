@@ -3,82 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAST Portal | ECS Asbestos</title>
+    <title>FAST | ECS Asbestos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* ECS BRANDING */
         :root { 
             --ecs-orange: #D4631E; 
-            --ecs-dark: #333333;
-            --ecs-gray: #fcfcfc;
+            --ecs-dark: #1A1A1A;
+            --ecs-border: #E5E7EB;
+            --ecs-bg: #F9FAFB;
         }
 
         body { 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
-            margin: 0; background-color: #f4f4f4; color: var(--ecs-dark);
-            overflow: hidden; 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            margin: 0; background-color: var(--ecs-bg); color: var(--ecs-dark);
+            height: 100vh; overflow: hidden;
         }
 
         .hidden { display: none !important; }
 
-        /* LOGIN SCREEN */
-        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; }
-        .login-card { 
-            background: white; padding: 40px; border-radius: 2px; 
-            border: 1px solid #eee; border-top: 5px solid var(--ecs-orange);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 340px; text-align: center; 
+        /* AUTHENTICATION AESTHETIC */
+        #login-screen { 
+            height: 100vh; display: flex; justify-content: center; align-items: center; 
+            background: linear-gradient(135deg, #fdfdfd 0%, #f3f4f6 100%);
         }
-        h1 { color: var(--ecs-orange); font-size: 2.5rem; margin: 0 0 5px 0; letter-spacing: 4px; font-weight: 700; }
-        .subtitle { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
+        .login-card { 
+            background: white; padding: 48px; border-radius: 8px; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); width: 360px; text-align: center; 
+        }
+        .login-card h1 { 
+            font-family: 'Montserrat', sans-serif; color: var(--ecs-dark); 
+            font-size: 2.5rem; margin: 0; letter-spacing: 6px; 
+        }
+        .login-card p { font-size: 12px; color: #6B7280; text-transform: uppercase; margin-bottom: 32px; letter-spacing: 1px; }
         
         input { 
-            width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; 
-            background: var(--ecs-gray); font-size: 14px; outline: none; box-sizing: border-box;
+            width: 100%; padding: 14px; margin: 8px 0; border: 1px solid var(--ecs-border);
+            border-radius: 6px; font-size: 14px; outline: none; transition: border 0.2s;
         }
+        input:focus { border-color: var(--ecs-orange); }
         
-        button { 
-            width: 100%; padding: 12px; background: var(--ecs-orange); color: white; 
-            border: none; cursor: pointer; font-weight: 700; text-transform: uppercase; margin-top: 10px; 
+        button.primary { 
+            width: 100%; padding: 14px; background: var(--ecs-orange); color: white; 
+            border: none; border-radius: 6px; cursor: pointer; font-weight: 600; 
+            text-transform: uppercase; margin-top: 16px; transition: opacity 0.2s;
         }
+        button.primary:hover { opacity: 0.9; }
 
-        /* DASHBOARD LAYOUT */
+        /* PROFESSIONAL DASHBOARD */
+        #dashboard { display: flex; flex-direction: column; height: 100vh; }
+        
         header { 
-            background: white; padding: 12px 25px; display: flex; 
-            justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ecs-orange);
+            background: white; padding: 0 24px; height: 64px; display: flex; 
+            justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border);
         }
-        
-        .search-area { 
-            padding: 20px; background: white; border-bottom: 1px solid #eee; 
-            text-align: center;
-        }
+        .brand { font-family: 'Montserrat', sans-serif; font-size: 1.25rem; letter-spacing: 2px; }
+        .brand span { color: var(--ecs-orange); }
 
+        .search-container { 
+            padding: 24px; background: white; display: flex; justify-content: center;
+        }
+        .search-wrapper { position: relative; width: 100%; max-width: 800px; }
         #searchBar { 
-            padding: 12px 20px; border: 1px solid #ddd; border-left: 5px solid var(--ecs-orange);
-            font-size: 15px; width: 80%; max-width: 600px; border-radius: 4px; outline: none;
+            width: 100%; padding: 16px 20px; border: 1px solid var(--ecs-border); 
+            border-radius: 100px; font-size: 16px; background: var(--ecs-bg);
+            box-sizing: border-box; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        #searchBar:focus { background: white; border-color: var(--ecs-orange); box-shadow: 0 0 0 4px rgba(212, 99, 30, 0.1); }
 
-        /* TABLE VIEW */
-        .table-wrapper { overflow: auto; height: calc(100vh - 165px); background: white; width: 100%; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        
+        /* DATA GRID */
+        .table-wrapper { 
+            flex: 1; overflow: auto; background: white; margin: 0 24px 24px 24px; 
+            border: 1px solid var(--ecs-border); border-radius: 8px;
+        }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
         th { 
-            background-color: #fafafa; color: #888; font-size: 10px; 
-            text-transform: uppercase; padding: 12px; border: 1px solid #eee;
-            position: sticky; top: 0; z-index: 10;
+            background-color: #F9FAFB; color: #4B5563; font-weight: 600; 
+            text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;
+            padding: 16px 20px; border-bottom: 1px solid var(--ecs-border);
+            position: sticky; top: 0; z-index: 10; text-align: left;
         }
-        
-        td { border: 1px solid #f0f0f0; padding: 10px; text-align: left; white-space: nowrap; }
-        tr:nth-child(even) { background-color: #fcfcfc; }
-        tr:hover { background-color: #fff9f5; }
+        td { padding: 14px 20px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #FFF9F5; }
 
-        .loader-text { margin-top: 10px; color: var(--ecs-orange); font-size: 12px; font-weight: bold; }
-        
-        /* SPINNER */
-        .spinner { 
-            border: 3px solid #f3f3f3; border-top: 3px solid var(--ecs-orange); 
-            border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; 
-            display: inline-block; vertical-align: middle; margin-right: 8px;
+        .loader { font-size: 13px; color: var(--ecs-orange); margin-top: 12px; font-weight: 600; }
+        .logout-btn { 
+            background: transparent; border: 1px solid var(--ecs-border); padding: 8px 16px;
+            border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .logout-btn:hover { background: #F3F4F6; }
     </style>
 </head>
 <body>
@@ -86,30 +99,30 @@
     <div id="login-screen">
         <div class="login-card">
             <h1>FAST</h1>
-            <div class="subtitle">Action Item Portal | ECS Asbestos</div>
+            <p>Field Analysis & Storage Tracking</p>
             <input type="text" id="userInput" placeholder="Email Address">
             <input type="password" id="passInput" placeholder="Password">
-            <button onclick="handleLogin()">Sign In</button>
-            <p id="loginStatus" style="color: red; font-size: 11px; margin-top: 15px;"></p>
+            <button class="primary" onclick="handleLogin()">Log In</button>
+            <p id="loginStatus" style="color: #EF4444; margin-top: 16px; text-transform: none;"></p>
         </div>
     </div>
 
     <div id="dashboard" class="hidden">
         <header>
-            <div style="font-weight: 700; color: var(--ecs-orange); font-size: 1.1rem;">FAST PORTAL</div>
-            <button onclick="logout()" style="padding: 5px 12px; font-size: 9px; background: #666; border: none; color: white; cursor: pointer;">LOGOUT</button>
+            <div class="brand">F<span>A</span>ST</div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
         </header>
         
-        <div class="search-area">
-            <input type="text" id="searchBar" oninput="debounceSearch()" placeholder="Type Job #, State, or Client Name...">
-            <div id="search-loader" class="loader-text hidden">
-                <div class="spinner"></div>Searching Xcelerate Database...
+        <div class="search-container">
+            <div class="search-wrapper">
+                <input type="text" id="searchBar" oninput="debounceSearch()" placeholder="Search Xcelerate records...">
+                <div id="search-loader" class="loader hidden">Searching database...</div>
             </div>
         </div>
 
         <div id="table-output" class="table-wrapper">
-            <div style="padding: 60px; text-align: center; color: #ccc; font-style: italic;">
-                Search results will appear here.
+            <div style="padding: 100px; text-align: center; color: #9CA3AF; font-size: 14px;">
+                Enter a search term to retrieve data from Xcelerate.
             </div>
         </div>
     </div>
@@ -118,90 +131,59 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwarttJ3JBpEyGUGCROHx7ctdpX9xEMj8qrgX48huawx5-xEWtvx55NU3oR-frBxDfcyQ/exec";
         let searchTimer;
 
-        // Auto-login logic
-        window.onload = function() {
-            if (localStorage.getItem("fast_session") === "true") {
-                showDashboard();
-            }
-        };
+        window.onload = () => { if (localStorage.getItem("fast_session") === "true") showDashboard(); };
 
         async function handleLogin() {
             const u = document.getElementById('userInput').value;
             const p = document.getElementById('passInput').value;
             const status = document.getElementById('loginStatus');
-            
-            status.style.color = "orange";
-            status.innerText = "AUTHENTICATING...";
-
+            status.innerText = "Authenticating...";
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
                 const data = await res.json();
-                
                 if(data.result === "success") {
                     localStorage.setItem("fast_session", "true");
                     showDashboard();
-                } else {
-                    status.style.color = "red";
-                    status.innerText = "INVALID EMAIL OR PASSWORD";
-                }
-            } catch(e) {
-                status.innerText = "SERVER CONNECTION ERROR";
-            }
+                } else { status.innerText = "Invalid credentials."; }
+            } catch(e) { status.innerText = "Connection error."; }
         }
 
-        function logout() {
-            localStorage.clear();
-            location.reload();
-        }
-
+        function logout() { localStorage.clear(); location.reload(); }
         function showDashboard() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
         }
 
-        // DEBOUNCE SEARCH: Waits 400ms after you stop typing before asking Google
         function debounceSearch() {
             clearTimeout(searchTimer);
             const q = document.getElementById("searchBar").value;
-            
-            if (q.length < 2) {
-                document.getElementById("table-output").innerHTML = '<div style="padding: 60px; text-align: center; color: #ccc; font-style: italic;">Search results will appear here.</div>';
-                return;
-            }
-            
+            if (q.length < 2) return;
             document.getElementById("search-loader").classList.remove("hidden");
-            searchTimer = setTimeout(() => executeServerSearch(q), 400); 
+            searchTimer = setTimeout(() => executeSearch(q), 400);
         }
 
-        async function executeServerSearch(query) {
+        async function executeSearch(query) {
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=search&q=${encodeURIComponent(query)}`);
                 const json = await res.json();
                 renderTable(json.headers, json.data);
-            } catch(e) {
-                document.getElementById("table-output").innerHTML = '<p style="text-align:center; color:red;">Search failed. Check connection.</p>';
-            } finally {
-                document.getElementById("search-loader").classList.add("hidden");
-            }
+            } finally { document.getElementById("search-loader").classList.add("hidden"); }
         }
 
         function renderTable(headers, rows) {
             const output = document.getElementById("table-output");
             if (!rows || rows.length === 0) {
-                output.innerHTML = "<p style='text-align:center; padding:50px; color:#999;'>No matches found in Xcelerate Data.</p>";
+                output.innerHTML = "<div style='padding:100px; text-align:center; color:#9CA3AF;'>No matching records found.</div>";
                 return;
             }
-            
             let html = `<table><thead><tr>`;
             headers.forEach(h => html += `<th>${h}</th>`);
             html += `</tr></thead><tbody>`;
-            
             rows.forEach(row => {
                 html += `<tr>`;
                 row.forEach(cell => html += `<td>${cell || ''}</td>`);
                 html += `</tr>`;
             });
-            
             html += `</tbody></table>`;
             output.innerHTML = html;
         }

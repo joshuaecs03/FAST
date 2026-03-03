@@ -5,200 +5,121 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAST Portal | ECS Asbestos</title>
     <style>
-        /* ECS BRANDING */
-        :root { 
-            --ecs-orange: #D4631E; 
-            --ecs-dark: #333333;
-            --ecs-gray: #fcfcfc;
-        }
-
-        body { 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
-            margin: 0; background-color: #f4f4f4; color: var(--ecs-dark);
-            overflow: hidden; /* Prevents double scrollbars */
-        }
-
+        :root { --ecs-orange: #D4631E; --ecs-dark: #333333; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #f4f4f4; color: var(--ecs-dark); }
         .hidden { display: none !important; }
-
-        /* LOGIN SCREEN */
-        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; }
-        .login-card { 
-            background: white; padding: 40px; border-radius: 2px; 
-            border: 1px solid #eee; border-top: 4px solid var(--ecs-orange);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 340px; text-align: center; 
-        }
-        h1 { color: var(--ecs-orange); font-size: 2.5rem; margin: 0 0 5px 0; letter-spacing: 4px; font-weight: 700; }
-        .subtitle { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
-        input { 
-            width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; 
-            background: var(--ecs-gray); font-size: 14px; outline: none; box-sizing: border-box;
-        }
-        button { 
-            width: 100%; padding: 12px; background: var(--ecs-orange); color: white; 
-            border: none; cursor: pointer; font-weight: 700; text-transform: uppercase; margin-top: 10px; 
-        }
-
-        /* DASHBOARD LAYOUT */
-        header { 
-            background: white; padding: 12px 25px; display: flex; 
-            justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ecs-orange);
-        }
-        .controls { 
-            padding: 20px; background: white; border-bottom: 1px solid #eee; 
-            text-align: center;
-        }
-        #searchBar { 
-            padding: 12px 20px; border: 1px solid #ddd; border-left: 4px solid var(--ecs-orange);
-            font-size: 15px; width: 80%; max-width: 600px; border-radius: 4px; outline: none;
-        }
-
-        /* DATA TABLE */
-        .table-wrapper { overflow: auto; height: calc(100vh - 165px); background: white; width: 100%; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
-        th { 
-            background-color: #fafafa; color: #888; font-size: 10px; 
-            text-transform: uppercase; padding: 12px; border: 1px solid #eee;
-            position: sticky; top: 0; z-index: 10;
-        }
-        td { border: 1px solid #f0f0f0; padding: 8px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        tr:nth-child(even) { background-color: #fcfcfc; }
-        tr:hover { background-color: #fff9f5; }
-
-        .status-msg { padding: 50px; text-align: center; color: #999; font-style: italic; }
         
-        .spinner { 
-            border: 3px solid #f3f3f3; border-top: 3px solid var(--ecs-orange); 
-            border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Login UI */
+        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .card { background: white; padding: 40px; border-top: 5px solid var(--ecs-orange); width: 320px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: var(--ecs-orange); margin: 0; font-size: 2.2rem; letter-spacing: 3px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; box-sizing: border-box; outline: none; }
+        button { width: 100%; padding: 12px; background: var(--ecs-orange); color: white; border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+
+        /* Portal UI */
+        header { background: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ecs-orange); }
+        .search-container { padding: 30px; background: white; text-align: center; border-bottom: 1px solid #eee; }
+        #searchBar { width: 70%; padding: 15px; border: 1px solid #ddd; border-left: 5px solid var(--ecs-orange); font-size: 16px; border-radius: 4px; }
+        
+        /* Table Styling (Report Style) */
+        .table-wrapper { overflow: auto; height: calc(100vh - 185px); background: white; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        th { background: #fafafa; color: #888; text-transform: uppercase; padding: 12px; border: 1px solid #eee; position: sticky; top: 0; }
+        td { border: 1px solid #f0f0f0; padding: 10px; white-space: nowrap; }
+        tr:hover { background: #fff9f5; }
+
+        .loader { margin: 10px; color: var(--ecs-orange); font-weight: bold; font-size: 12px; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
-        <div class="login-card">
+        <div class="card">
             <h1>FAST</h1>
-            <div class="subtitle">Action Item Portal | ECS Asbestos</div>
-            <input type="text" id="userInput" placeholder="Email Address">
-            <input type="password" id="passInput" placeholder="Password">
-            <button id="loginBtn" onclick="handleLogin()">Sign In</button>
-            <p id="loginStatus" style="color: red; font-size: 11px; margin-top: 15px;"></p>
+            <p style="font-size: 10px; color: #999; letter-spacing: 1px;">ECS ASBESTOS PORTAL</p>
+            <input type="text" id="u" placeholder="Email Address">
+            <input type="password" id="p" placeholder="Password">
+            <button onclick="handleLogin()">Sign In</button>
+            <p id="status" style="color: red; font-size: 11px;"></p>
         </div>
     </div>
 
-    <div id="dashboard" class="hidden">
+    <div id="portal" class="hidden">
         <header>
-            <div style="font-weight: 700; color: var(--ecs-orange); font-size: 1.1rem;">FAST PORTAL</div>
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <span id="user-label" style="font-size: 10px; color: #999;"></span>
-                <button onclick="logout()" style="padding: 4px 10px; font-size: 9px; background: #666; border: none; color: white; cursor: pointer;">LOGOUT</button>
-            </div>
+            <div style="font-weight: bold; color: var(--ecs-orange);">FAST PORTAL</div>
+            <button onclick="logout()" style="background:#666; color:white; border:none; padding: 5px 10px; font-size: 10px; cursor:pointer;">LOGOUT</button>
         </header>
         
-        <div class="controls">
-            <input type="text" id="searchBar" onkeyup="filterTable()" placeholder="Search Xcelerate Data (e.g. Job #, State, Client)...">
+        <div class="search-container">
+            <input type="text" id="searchBar" oninput="debounceSearch()" placeholder="Type to search Xcelerate (Job #, State, Client)...">
+            <div id="search-loader" class="loader hidden">Searching Server...</div>
         </div>
 
         <div id="table-output" class="table-wrapper">
-            <div class="status-msg">Enter a search term above to display matching records.</div>
+            <p style="text-align:center; color:#ccc; padding-top:50px;">Results will appear here.</p>
         </div>
     </div>
 
     <script>
-        // 1. UPDATE THIS URL WITH YOUR GOOGLE EXEC LINK
+        // 1. YOUR DEPLOYMENT URL
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwarttJ3JBpEyGUGCROHx7ctdpX9xEMj8qrgX48huawx5-xEWtvx55NU3oR-frBxDfcyQ/exec";
-        
-        let CACHED_DATA = null;
+        let searchTimer;
 
-        // Auto-login check on page load
         window.onload = function() {
-            if (localStorage.getItem("fast_session") === "true") {
-                showDashboard();
-                fetchData();
-            }
+            if (localStorage.getItem("fast_auth") === "true") showPortal();
         };
 
         async function handleLogin() {
-            const u = document.getElementById('userInput').value;
-            const p = document.getElementById('passInput').value;
-            const status = document.getElementById('loginStatus');
-            
-            status.style.color = "#D4631E";
-            status.innerText = "VERIFYING...";
-
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
-                const data = await res.json();
-                
-                if(data.result === "success") {
-                    localStorage.setItem("fast_session", "true");
-                    localStorage.setItem("fast_user", u);
-                    showDashboard();
-                    fetchData();
-                } else {
-                    status.style.color = "red";
-                    status.innerText = "INVALID CREDENTIALS";
-                }
-            } catch(e) {
-                status.innerText = "CONNECTION ERROR";
+            const user = document.getElementById('u').value;
+            const pass = document.getElementById('p').value;
+            const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`);
+            const data = await res.json();
+            if (data.result === "success") {
+                localStorage.setItem("fast_auth", "true");
+                showPortal();
+            } else {
+                document.getElementById('status').innerText = "Access Denied";
             }
         }
 
-        function logout() {
-            localStorage.clear();
-            location.reload();
+        function logout() { localStorage.clear(); location.reload(); }
+        function showPortal() { 
+            document.getElementById('login-screen').classList.add('hidden'); 
+            document.getElementById('portal').classList.remove('hidden'); 
         }
 
-        function showDashboard() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('user-label').innerText = localStorage.getItem("fast_user");
+        // 2. SERVER-SIDE SEARCH LOGIC (Instant Search)
+        function debounceSearch() {
+            clearTimeout(searchTimer);
+            const q = document.getElementById("searchBar").value;
+            if (q.length < 2) return;
+            
+            document.getElementById("search-loader").classList.remove("hidden");
+            searchTimer = setTimeout(() => executeSearch(q), 400); 
         }
 
-        async function fetchData() {
+        async function executeSearch(query) {
             try {
-                const res = await fetch(`${SCRIPT_URL}?action=getData`);
+                const res = await fetch(`${SCRIPT_URL}?action=search&q=${encodeURIComponent(query)}`);
                 const json = await res.json();
-                CACHED_DATA = json.data;
-                console.log("Data cached successfully.");
-            } catch(e) {
-                console.error("Failed to pre-fetch data.");
+                renderTable(json.headers, json.data);
+            } finally {
+                document.getElementById("search-loader").classList.add("hidden");
             }
         }
 
-        function filterTable() {
-            const query = document.getElementById("searchBar").value.toUpperCase();
+        function renderTable(headers, rows) {
             const output = document.getElementById("table-output");
-
-            if (query.length < 1) {
-                output.innerHTML = '<div class="status-msg">Enter a search term above to display matching records.</div>';
+            if (rows.length === 0) {
+                output.innerHTML = "<p style='text-align:center; padding:50px;'>No matches found.</p>";
                 return;
             }
-
-            if (!CACHED_DATA) {
-                output.innerHTML = '<div class="status-msg"><div class="spinner"></div> Syncing with Xcelerate...</div>';
-                return;
-            }
-
-            const headers = CACHED_DATA[0];
-            const rows = CACHED_DATA.slice(1);
-            
-            // Speed Optimization: Search filter
-            const filtered = rows.filter(row => row.join(" ").toUpperCase().includes(query));
-            
-            // UI Optimization: Limit render to top 50 rows so the browser doesn't lag
-            const limited = filtered.slice(0, 50);
-
-            let html = `<div style="padding: 5px 15px; font-size: 10px; color: #999; background: #fafafa;">Showing ${limited.length} of ${filtered.length} matches</div>`;
-            html += `<table id="mainTable"><thead><tr>`;
+            let html = `<table><thead><tr>`;
             headers.forEach(h => html += `<th>${h}</th>`);
             html += `</tr></thead><tbody>`;
-            
-            limited.forEach(row => {
+            rows.forEach(row => {
                 html += `<tr>`;
-                row.forEach(cell => {
-                    html += `<td>${cell || ''}</td>`;
-                });
+                row.forEach(cell => html += `<td>${cell || ''}</td>`);
                 html += `</tr>`;
             });
             html += `</tbody></table>`;

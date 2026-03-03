@@ -3,22 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAST - ECS Asbestos</title>
+    <title>FAST Portal | ECS Asbestos</title>
     <style>
-        :root { --primary: #003366; --accent: #c0392b; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f4f7f9; }
+        :root { --primary: #003366; --accent: #c0392b; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--bg); color: #333; }
         .hidden { display: none !important; }
+
+        /* Login Screen */
+        #login-container { height: 100vh; display: flex; justify-content: center; align-items: center; flex-direction: column; text-align: center; }
+        .card { background: white; padding: 50px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h1 { color: var(--primary); font-size: 3.5rem; margin: 0; letter-spacing: 8px; }
+        .btn-enter { background: var(--primary); color: white; border: none; padding: 15px 40px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1.1rem; transition: 0.3s; }
+        .btn-enter:hover { background: #004080; }
+
+        /* Dashboard */
+        header { background: var(--primary); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .search-box { padding: 10px 20px; background: white; border-bottom: 1px solid #ddd; display: flex; gap: 10px; }
+        #searchBar { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
         
-        #login-container { height: 100vh; display: flex; justify-content: center; align-items: center; flex-direction: column; }
-        .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; }
-        
-        header { background: var(--primary); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
-        .table-wrapper { padding: 20px; overflow: auto; height: calc(100vh - 80px); }
-        table { width: 100%; border-collapse: collapse; background: white; font-size: 11px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; white-space: nowrap; }
-        th { background: #eee; position: sticky; top: 0; }
-        
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 2s linear infinite; margin: 20px auto; }
+        .table-wrapper { overflow: auto; height: calc(100vh - 130px); width: 100%; }
+        table { border-collapse: collapse; background: white; min-width: 100%; font-size: 12px; }
+        th, td { border: 1px solid #eee; padding: 10px; text-align: left; white-space: nowrap; }
+        th { background: #f2f2f2; font-weight: bold; position: sticky; top: 0; z-index: 5; }
+        tr:nth-child(even) { background: #fafafa; }
+        tr:hover { background: #f1f1f1; }
+
+        /* Loader */
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
@@ -27,18 +38,27 @@
     <div id="login-container">
         <div class="card">
             <h1>FAST</h1>
-            <p>Field Analysis & Storage Tracking</p>
-            <button id="entryBtn" style="padding:15px 30px; cursor:pointer;" onclick="enterPortal()">Enter FAST Portal</button>
-            <div id="loader" class="hidden"><div class="loader"></div><p>Verifying ECS Credentials...</p></div>
-            <p id="status" style="margin-top: 20px; color: red;"></p>
+            <p style="color: #666; margin-bottom: 30px;">Field Analysis & Storage Tracking | ECS Asbestos</p>
+            <button id="entryBtn" class="btn-enter" onclick="enterPortal()">ACCESS PORTAL</button>
+            <div id="loader" class="hidden">
+                <div class="spinner"></div>
+                <p>Authenticating with ECS Google Account...</p>
+            </div>
+            <p id="status" style="margin-top: 20px; color: #c0392b; font-weight: bold;"></p>
         </div>
     </div>
 
     <div id="dashboard" class="hidden">
         <header>
-            <div style="font-weight: bold; font-size: 1.5rem;">FAST PORTAL</div>
-            <div id="user-info"></div>
+            <div style="font-weight: bold; font-size: 1.6rem;">FAST PORTAL</div>
+            <div id="user-display" style="font-size: 0.9rem;"></div>
         </header>
+        
+        <div class="search-box">
+            <input type="text" id="searchBar" onkeyup="filterTable()" placeholder="Search by Claim Number, Customer Name, or Location...">
+            <button onclick="location.reload()" style="background:#ddd; border:none; padding:5px 15px; cursor:pointer; border-radius:4px;">Logout</button>
+        </div>
+
         <div class="table-wrapper" id="table-output"></div>
     </div>
 
@@ -61,30 +81,51 @@
                 if (result.result === "success") {
                     document.getElementById('login-container').classList.add('hidden');
                     document.getElementById('dashboard').classList.remove('hidden');
-                    document.getElementById('user-info').innerText = result.user;
-                    renderTable(result.data);
+                    document.getElementById('user-display').innerText = result.user;
+                    renderFastTable(result.data);
                 } else {
                     throw new Error(result.message);
                 }
             } catch (err) {
                 loader.classList.add('hidden');
                 btn.classList.remove('hidden');
-                status.innerHTML = "Access Denied. Ensure you are logged into @ecs-asbestos.com";
-                console.error(err);
+                status.innerHTML = "Access Denied.<br>Please ensure you are logged into your @ecs-asbestos.com account.";
             }
         }
 
-        function renderTable(data) {
-            let html = `<table><thead><tr>`;
-            Object.keys(data[0]).forEach(k => html += `<th>${k}</th>`);
+        function renderFastTable(dataArray) {
+            if (!dataArray || dataArray.length === 0) return;
+            
+            const headers = dataArray[0];
+            const rows = dataArray.slice(1);
+            
+            let html = `<table id="mainTable"><thead><tr>`;
+            headers.forEach(h => html += `<th>${h}</th>`);
             html += `</tr></thead><tbody>`;
-            data.forEach(row => {
+            
+            rows.forEach(row => {
                 html += `<tr>`;
-                Object.values(row).forEach(v => html += `<td>${v || ''}</td>`);
+                row.forEach(cell => html += `<td>${cell || ''}</td>`);
                 html += `</tr>`;
             });
             html += `</tbody></table>`;
             document.getElementById('table-output').innerHTML = html;
+        }
+
+        function filterTable() {
+            const input = document.getElementById("searchBar");
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById("mainTable");
+            const tr = table.getElementsByTagName("tr");
+
+            for (let i = 1; i < tr.length; i++) {
+                let textContent = tr[i].textContent || tr[i].innerText;
+                if (textContent.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
         }
     </script>
 </body>

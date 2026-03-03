@@ -6,31 +6,45 @@
     <title>FAST | ECS Asbestos</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root { --ecs-orange: #D4631E; --ecs-dark: #1A1A1A; --ecs-border: #E5E7EB; --ecs-bg: #F9FAFB; }
-        body { font-family: 'Inter', sans-serif; margin: 0; background-color: var(--ecs-bg); color: var(--ecs-dark); height: 100vh; overflow: hidden; }
+        :root { --ecs-orange: #D4631E; --ecs-dark: #111827; --ecs-border: #E5E7EB; --ecs-bg: #F9FAFB; }
+        
+        body { font-family: 'Inter', sans-serif; margin: 0; background: var(--ecs-bg); color: var(--ecs-dark); height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
-        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: #f3f4f6; }
-        .login-card { background: white; padding: 48px; border-radius: 8px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); width: 360px; text-align: center; }
-        .login-card h1 { font-family: 'Montserrat', sans-serif; color: var(--ecs-dark); font-size: 2.5rem; margin: 0; letter-spacing: 6px; }
-        input { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid var(--ecs-border); border-radius: 6px; box-sizing: border-box; }
-        button.primary { width: 100%; padding: 14px; background: var(--ecs-orange); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-transform: uppercase; margin-top: 16px; }
-        
-        /* Dashboard Layout */
-        #dashboard { display: flex; flex-direction: column; height: 100vh; }
-        header { background: white; padding: 0 24px; height: 64px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
-        .search-container { padding: 24px; background: white; display: flex; flex-direction: column; align-items: center; }
-        #searchBar { width: 100%; max-width: 800px; padding: 16px 20px; border: 1px solid var(--ecs-border); border-radius: 100px; font-size: 16px; background: var(--ecs-bg); outline: none; transition: 0.3s; }
-        #searchBar:focus { background: white; border-color: var(--ecs-orange); box-shadow: 0 0 0 4px rgba(212, 99, 30, 0.1); }
 
-        .table-wrapper { flex: 1; overflow: auto; background: white; margin: 0 24px 24px 24px; border: 1px solid var(--ecs-border); border-radius: 8px; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
-        th { background: #F9FAFB; padding: 16px; border-bottom: 1px solid var(--ecs-border); position: sticky; top: 0; text-align: left; }
-        td { padding: 12px 16px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; }
+        /* AUTH UI */
+        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: #f3f4f6; }
+        .login-card { background: white; padding: 60px; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1); width: 340px; text-align: center; }
+        .login-card h1 { font-family: 'Montserrat', sans-serif; font-size: 3.2rem; margin: 0 0 40px 0; letter-spacing: 8px; color: var(--ecs-dark); }
+        input { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid var(--ecs-border); border-radius: 8px; box-sizing: border-box; outline: none; font-size: 14px; }
+        input:focus { border-color: var(--ecs-orange); }
+        button.primary { width: 100%; padding: 14px; background: var(--ecs-orange); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; text-transform: uppercase; margin-top: 10px; }
+
+        /* SYNC OVERLAY */
+        #sync-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.98); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--ecs-orange); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* DASHBOARD */
+        #dashboard { display: flex; flex-direction: column; height: 100vh; }
+        header { background: white; padding: 0 30px; height: 70px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
+        .brand { font-family: 'Montserrat', sans-serif; font-size: 1.5rem; letter-spacing: 4px; font-weight: 700; }
         
-        /* Loading Overlay */
-        #sync-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .progress-bar { width: 200px; height: 4px; background: #eee; margin-top: 20px; }
-        .progress-fill { height: 100%; background: var(--ecs-orange); width: 0%; transition: 0.3s; }
+        .search-area { padding: 30px; background: white; border-bottom: 1px solid var(--ecs-border); }
+        #searchBar { width: 100%; max-width: 900px; padding: 18px 25px; border: 1px solid var(--ecs-border); border-radius: 50px; font-size: 16px; display: block; margin: 0 auto; outline: none; transition: 0.3s; }
+        #searchBar:focus { border-color: var(--ecs-orange); box-shadow: 0 0 0 4px rgba(212, 99, 30, 0.1); }
+
+        /* TABLE GRID */
+        .table-wrapper { flex: 1; overflow: auto; background: white; margin: 20px; border-radius: 8px; border: 1px solid var(--ecs-border); }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+        th { background: #F9FAFB; padding: 16px; border-bottom: 1px solid var(--ecs-border); position: sticky; top: 0; text-align: left; font-weight: 600; color: #6B7280; text-transform: uppercase; font-size: 11px; z-index: 20; }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; color: #374151; }
+        
+        /* Freeze first column (Job/File #) */
+        td:first-child, th:first-child { position: sticky; left: 0; background: inherit; z-index: 21; border-right: 1px solid var(--ecs-border); }
+        th:first-child { z-index: 30; background: #F9FAFB; }
+        tr:hover td { background-color: #FFF9F5; }
+
+        .btn-logout { background: transparent; border: 1px solid var(--ecs-border); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -38,29 +52,29 @@
     <div id="login-screen">
         <div class="login-card">
             <h1>FAST</h1>
-            <p style="font-size:10px; color:#999; margin-bottom:20px;">ECS ASBESTOS</p>
             <input type="text" id="userInput" placeholder="Email Address">
             <input type="password" id="passInput" placeholder="Password">
             <button class="primary" onclick="handleLogin()">Log In</button>
-            <p id="loginStatus" style="color:red; font-size:12px; margin-top:10px;"></p>
+            <p id="loginStatus" style="color:red; font-size:12px; margin-top:15px;"></p>
         </div>
     </div>
 
     <div id="sync-overlay" class="hidden">
-        <h2 style="font-family:Montserrat; color:var(--ecs-orange)">SYNCING XCELERATE</h2>
-        <p style="font-size:12px;">Downloading data for instant searching...</p>
-        <div class="progress-bar"><div id="p-fill" class="progress-fill"></div></div>
+        <div class="spinner"></div>
+        <h2 style="font-family:Montserrat; color:var(--ecs-orange); margin-top:20px; letter-spacing:4px;">SYNCING</h2>
+        <p style="font-size:12px; color:#666;">Preparing Xcelerate data for instant access...</p>
     </div>
 
     <div id="dashboard" class="hidden">
         <header>
-            <div style="font-family:Montserrat; font-size:1.2rem;">F<span style="color:var(--ecs-orange)">A</span>ST</div>
-            <button onclick="logout()" style="padding:6px 12px; cursor:pointer;">Logout</button>
+            <div class="brand">F<span style="color:var(--ecs-orange)">A</span>ST</div>
+            <button class="btn-logout" onclick="logout()">LOGOUT</button>
         </header>
-        <div class="search-container">
-            <input type="text" id="searchBar" oninput="instantSearch()" placeholder="Search all records instantly...">
-            <p id="result-count" style="font-size:11px; color:#999; margin-top:8px;"></p>
+        
+        <div class="search-area">
+            <input type="text" id="searchBar" oninput="instantSearch()" placeholder="Search Job #, Client, State, or Location...">
         </div>
+
         <div class="table-wrapper">
             <div id="table-output"></div>
         </div>
@@ -68,10 +82,10 @@
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwarttJ3JBpEyGUGCROHx7ctdpX9xEMj8qrgX48huawx5-xEWtvx55NU3oR-frBxDfcyQ/exec";
-        let MASTER_DATA = [];
+        let CACHE_DATA = [];
         let HEADERS = [];
 
-        window.onload = () => { if (localStorage.getItem("fast_auth") === "true") startSession(); };
+        window.onload = () => { if (localStorage.getItem("fast_active") === "true") initPortal(); };
 
         async function handleLogin() {
             const u = document.getElementById('userInput').value;
@@ -80,49 +94,41 @@
                 const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
                 const data = await res.json();
                 if(data.result === "success") {
-                    localStorage.setItem("fast_auth", "true");
-                    startSession();
-                } else { document.getElementById('loginStatus').innerText = "Invalid Login"; }
-            } catch(e) { alert("Server Error"); }
+                    localStorage.setItem("fast_active", "true");
+                    initPortal();
+                } else { document.getElementById('loginStatus').innerText = "INVALID CREDENTIALS"; }
+            } catch(e) { alert("Server Error during Auth"); }
         }
 
-        async function startSession() {
+        async function initPortal() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('sync-overlay').classList.remove('hidden');
-            const fill = document.getElementById('p-fill');
-            
-            fill.style.width = "40%";
-            
             try {
-                // Modified the "search" action to return EVERYTHING if no query is sent
+                // Fetching EVERYTHING for local caching
                 const res = await fetch(`${SCRIPT_URL}?action=search&q=`); 
                 const json = await res.json();
-                
                 HEADERS = json.headers;
-                MASTER_DATA = json.data; // Now we have all 100 columns cached in memory
-                
-                fill.style.width = "100%";
-                setTimeout(() => {
-                    document.getElementById('sync-overlay').classList.add('hidden');
-                    document.getElementById('dashboard').classList.remove('hidden');
-                }, 500);
-            } catch(e) { alert("Failed to download data."); }
+                CACHE_DATA = json.data;
+                document.getElementById('sync-overlay').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+            } catch(e) { alert("Data Sync Failed. Check your internet."); }
         }
 
         function instantSearch() {
             const q = document.getElementById("searchBar").value.toUpperCase();
+            const output = document.getElementById('table-output');
+            
             if(q.length < 2) { 
-                document.getElementById('table-output').innerHTML = ""; 
+                output.innerHTML = '<p style="text-align:center; padding:100px; color:#ccc;">Enter at least 2 characters to search.</p>'; 
                 return; 
             }
 
-            // INSTANT filtering from local memory
-            const filtered = MASTER_DATA.filter(row => row.join(" ").toUpperCase().includes(q)).slice(0, 50);
-            renderTable(filtered);
-            document.getElementById('result-count').innerText = `Showing top ${filtered.length} matches`;
+            // High Speed Local Filtering
+            const filtered = CACHE_DATA.filter(r => r.join(" ").toUpperCase().includes(q)).slice(0, 100);
+            render(filtered);
         }
 
-        function renderTable(rows) {
+        function render(rows) {
             let html = `<table><thead><tr>`;
             HEADERS.forEach(h => html += `<th>${h}</th>`);
             html += `</tr></thead><tbody>`;

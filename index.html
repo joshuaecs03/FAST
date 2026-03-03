@@ -64,4 +64,146 @@
         tr:nth-child(even) { background-color: #fcfcfc; }
         tr:hover { background-color: #fff9f5; }
 
-        .status
+        .status-msg { padding: 50px; text-align: center; color: #999; font-style: italic; }
+        
+        .spinner { 
+            border: 3px solid #f3f3f3; border-top: 3px solid var(--ecs-orange); 
+            border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-card">
+            <h1>FAST</h1>
+            <div class="subtitle">Action Item Portal | ECS Asbestos</div>
+            <input type="text" id="userInput" placeholder="Email Address">
+            <input type="password" id="passInput" placeholder="Password">
+            <button id="loginBtn" onclick="handleLogin()">Sign In</button>
+            <p id="loginStatus" style="color: red; font-size: 11px; margin-top: 15px;"></p>
+        </div>
+    </div>
+
+    <div id="dashboard" class="hidden">
+        <header>
+            <div style="font-weight: 700; color: var(--ecs-orange); font-size: 1.1rem;">FAST PORTAL</div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span id="user-label" style="font-size: 10px; color: #999;"></span>
+                <button onclick="logout()" style="padding: 4px 10px; font-size: 9px; background: #666; border: none; color: white; cursor: pointer;">LOGOUT</button>
+            </div>
+        </header>
+        
+        <div class="controls">
+            <input type="text" id="searchBar" onkeyup="filterTable()" placeholder="Search Xcelerate Data (e.g. Job #, State, Client)...">
+        </div>
+
+        <div id="table-output" class="table-wrapper">
+            <div class="status-msg">Enter a search term above to display matching records.</div>
+        </div>
+    </div>
+
+    <script>
+        // 1. UPDATE THIS URL WITH YOUR GOOGLE EXEC LINK
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwarttJ3JBpEyGUGCROHx7ctdpX9xEMj8qrgX48huawx5-xEWtvx55NU3oR-frBxDfcyQ/exec";
+        
+        let CACHED_DATA = null;
+
+        // Auto-login check on page load
+        window.onload = function() {
+            if (localStorage.getItem("fast_session") === "true") {
+                showDashboard();
+                fetchData();
+            }
+        };
+
+        async function handleLogin() {
+            const u = document.getElementById('userInput').value;
+            const p = document.getElementById('passInput').value;
+            const status = document.getElementById('loginStatus');
+            
+            status.style.color = "#D4631E";
+            status.innerText = "VERIFYING...";
+
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
+                const data = await res.json();
+                
+                if(data.result === "success") {
+                    localStorage.setItem("fast_session", "true");
+                    localStorage.setItem("fast_user", u);
+                    showDashboard();
+                    fetchData();
+                } else {
+                    status.style.color = "red";
+                    status.innerText = "INVALID CREDENTIALS";
+                }
+            } catch(e) {
+                status.innerText = "CONNECTION ERROR";
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        function showDashboard() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('user-label').innerText = localStorage.getItem("fast_user");
+        }
+
+        async function fetchData() {
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=getData`);
+                const json = await res.json();
+                CACHED_DATA = json.data;
+                console.log("Data cached successfully.");
+            } catch(e) {
+                console.error("Failed to pre-fetch data.");
+            }
+        }
+
+        function filterTable() {
+            const query = document.getElementById("searchBar").value.toUpperCase();
+            const output = document.getElementById("table-output");
+
+            if (query.length < 1) {
+                output.innerHTML = '<div class="status-msg">Enter a search term above to display matching records.</div>';
+                return;
+            }
+
+            if (!CACHED_DATA) {
+                output.innerHTML = '<div class="status-msg"><div class="spinner"></div> Syncing with Xcelerate...</div>';
+                return;
+            }
+
+            const headers = CACHED_DATA[0];
+            const rows = CACHED_DATA.slice(1);
+            
+            // Speed Optimization: Search filter
+            const filtered = rows.filter(row => row.join(" ").toUpperCase().includes(query));
+            
+            // UI Optimization: Limit render to top 50 rows so the browser doesn't lag
+            const limited = filtered.slice(0, 50);
+
+            let html = `<div style="padding: 5px 15px; font-size: 10px; color: #999; background: #fafafa;">Showing ${limited.length} of ${filtered.length} matches</div>`;
+            html += `<table id="mainTable"><thead><tr>`;
+            headers.forEach(h => html += `<th>${h}</th>`);
+            html += `</tr></thead><tbody>`;
+            
+            limited.forEach(row => {
+                html += `<tr>`;
+                row.forEach(cell => {
+                    html += `<td>${cell || ''}</td>`;
+                });
+                html += `</tr>`;
+            });
+            html += `</tbody></table>`;
+            output.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

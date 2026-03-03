@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAST | ECS Asbestos</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
         :root { --ecs-orange: #D4631E; --ecs-dark: #111827; --ecs-border: #E5E7EB; --ecs-bg: #F9FAFB; }
         body { font-family: 'Inter', sans-serif; margin: 0; background: var(--ecs-bg); color: var(--ecs-dark); height: 100vh; overflow: hidden; }
@@ -21,17 +22,18 @@
         /* DASHBOARD */
         #dashboard { display: flex; flex-direction: column; height: 100vh; }
         header { background: white; padding: 0 30px; height: 70px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
-        
         .search-area { padding: 20px 30px; background: white; border-bottom: 1px solid var(--ecs-border); display: flex; gap: 15px; align-items: center; justify-content: center; }
         #searchBar { width: 100%; max-width: 600px; padding: 14px 20px; border: 1px solid var(--ecs-border); border-radius: 50px; font-size: 15px; outline: none; }
 
-        /* COLUMN SELECTOR DROPDOWN */
+        /* COLUMN SELECTOR */
         .dropdown { position: relative; display: inline-block; }
         .dropbtn { background: white; border: 1px solid var(--ecs-border); padding: 12px 18px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        .dropdown-content { display: none; position: absolute; right: 0; background-color: white; min-width: 250px; max-height: 400px; overflow-y: auto; box-shadow: 0px 8px 16px rgba(0,0,0,0.1); z-index: 100; border-radius: 8px; padding: 15px; border: 1px solid var(--ecs-border); text-align: left; }
+        .dropdown-content { display: none; position: absolute; right: 0; background-color: white; min-width: 300px; max-height: 500px; overflow-y: auto; box-shadow: 0px 8px 16px rgba(0,0,0,0.1); z-index: 100; border-radius: 8px; padding: 15px; border: 1px solid var(--ecs-border); }
         .dropdown:hover .dropdown-content { display: block; }
-        .col-item { display: flex; align-items: center; gap: 10px; font-size: 12px; padding: 6px 0; border-bottom: 1px solid #f9f9f9; cursor: pointer; }
-        .col-item:hover { background: #fcfcfc; }
+        
+        .col-item { display: flex; align-items: center; gap: 10px; font-size: 12px; padding: 8px; background: #fff; border: 1px solid #f3f3f3; margin-bottom: 4px; border-radius: 4px; cursor: grab; }
+        .col-item:active { cursor: grabbing; }
+        .handle { color: #ccc; cursor: grab; padding-right: 5px; }
 
         /* TABLE */
         .table-wrapper { flex: 1; overflow: auto; background: white; margin: 15px 25px; border-radius: 8px; border: 1px solid var(--ecs-border); }
@@ -39,12 +41,9 @@
         th { background: #F9FAFB; padding: 14px; border-bottom: 1px solid var(--ecs-border); position: sticky; top: 0; text-align: left; font-weight: 600; color: #6B7280; text-transform: uppercase; font-size: 10px; z-index: 20; }
         td { padding: 10px 14px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; color: #374151; }
         
-        /* Freeze first column (Job #) */
         td:first-child, th:first-child { position: sticky; left: 0; background: inherit; z-index: 21; border-right: 1px solid var(--ecs-border); }
         th:first-child { z-index: 30; background: #F9FAFB; }
         tr:hover td { background-color: #FFF9F5; }
-
-        .sync-status { font-size: 11px; color: var(--ecs-orange); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -62,39 +61,35 @@
     <div id="dashboard" class="hidden">
         <header>
             <div class="brand-logo" style="font-size: 1.5rem; margin: 0; letter-spacing: 4px;">F<span>A</span>ST</div>
-            <div id="sync-status" class="sync-status">Syncing Data...</div>
             <button onclick="logout()" style="background:none; border:1px solid #ddd; padding:5px 15px; cursor:pointer; border-radius:5px; font-size:11px;">Logout</button>
         </header>
         
         <div class="search-area">
-            <input type="text" id="searchBar" oninput="instantSearch()" placeholder="Initial sync in progress..." disabled>
-            
+            <input type="text" id="searchBar" oninput="instantSearch()" placeholder="Initial sync..." disabled>
             <div class="dropdown">
-                <button class="dropbtn" id="colBtn">⚙️ Columns</button>
-                <div class="dropdown-content" id="col-selector">
-                    <p style="margin:0 0 10px 0; font-weight:bold; font-size:12px;">Visible Columns:</p>
-                    <div id="checkbox-list" style="color:#999; font-size:11px;">Loading headers...</div>
+                <button class="dropbtn">⚙️ Columns</button>
+                <div class="dropdown-content">
+                    <p style="margin:0 0 10px 0; font-size:11px; color:#666;">Drag to reorder. Check to show.</p>
+                    <div id="checkbox-list"></div>
                 </div>
             </div>
         </div>
 
-        <div class="table-wrapper">
-            <div id="table-output"></div>
-        </div>
+        <div class="table-wrapper"><div id="table-output"></div></div>
     </div>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyoO-wu2p2j463ePFB5kW59yv45-hxBo7gV8EK0hqbV5t5q1MVn2K8nvWIOFmk4Q0OxSA/exec";
         let CACHE = [];
-        let HEADERS = [];
-        let VISIBLE_COLS = [];
+        let COLUMN_DEFS = []; // Stores objects: { name: string, visible: bool, index: original_index }
+
+        const DEFAULT_COLS = ["File Number", "File Name", "Status", "Customer Name", "Loss Address", "State", "Insurance Company", "Referred By", "Referred By Organization Name", "Assigned Adjuster"];
 
         window.onload = () => { if (localStorage.getItem("fast_active") === "true") init(); };
 
         async function handleLogin() {
-            const user = document.getElementById('u').value;
-            const pass = document.getElementById('p').value;
-            const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`);
+            const u = document.getElementById('u').value, p = document.getElementById('p').value;
+            const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
             const data = await res.json();
             if(data.result === "success") { localStorage.setItem("fast_active", "true"); init(); }
             else { document.getElementById('loginStatus').innerText = "Access Denied"; }
@@ -104,70 +99,84 @@
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
             
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=search&q=`); 
-                const json = await res.json();
-                HEADERS = json.headers;
-                CACHE = json.data;
-                
-                // Show first 12 columns by default to avoid overwhelming the view
-                VISIBLE_COLS = HEADERS.map((_, i) => i < 12);
-                
-                buildColSelector();
+            const res = await fetch(`${SCRIPT_URL}?action=search&q=`); 
+            const json = await res.json();
+            const rawHeaders = json.headers;
+            CACHE = json.data;
 
-                const sb = document.getElementById('searchBar');
-                sb.disabled = false;
-                sb.placeholder = "Search Job #, Client, or Location...";
-                document.getElementById('sync-status').innerText = "✓ System Ready";
-                document.getElementById('sync-status').style.color = "green";
-            } catch(e) {
-                document.getElementById('sync-status').innerText = "Sync Failed. Refresh.";
+            // Load saved order or create new
+            const saved = localStorage.getItem("fast_col_order_v2");
+            if (saved) {
+                COLUMN_DEFS = JSON.parse(saved);
+            } else {
+                // Initialize with your requested defaults first
+                const ordered = [];
+                DEFAULT_COLS.forEach(name => {
+                    let idx = rawHeaders.indexOf(name);
+                    if(idx !== -1) ordered.push({ name: name, visible: true, index: idx });
+                });
+                // Add the rest as hidden
+                rawHeaders.forEach((name, idx) => {
+                    if(!DEFAULT_COLS.includes(name)) ordered.push({ name: name, visible: false, index: idx });
+                });
+                COLUMN_DEFS = ordered;
             }
+
+            buildColSelector();
+            const sb = document.getElementById('searchBar');
+            sb.disabled = false; sb.placeholder = "Search records...";
         }
 
         function buildColSelector() {
             const list = document.getElementById('checkbox-list');
-            list.innerHTML = ""; // Clear the loading text
-            HEADERS.forEach((h, i) => {
+            list.innerHTML = "";
+            COLUMN_DEFS.forEach((col, i) => {
                 const item = document.createElement('div');
                 item.className = 'col-item';
-                item.innerHTML = `
-                    <input type="checkbox" id="col-${i}" ${VISIBLE_COLS[i] ? 'checked' : ''} onchange="toggleCol(${i})">
-                    <label for="col-${i}" style="cursor:pointer; flex:1;">${h}</label>
-                `;
+                item.setAttribute('data-id', i);
+                item.innerHTML = `<span class="handle">⠿</span><input type="checkbox" id="c-${i}" ${col.visible ? 'checked' : ''} onchange="toggle(${i})"><label style="flex:1; margin-left:8px;">${col.name}</label>`;
                 list.appendChild(item);
+            });
+
+            new Sortable(list, {
+                handle: '.handle',
+                animation: 150,
+                onEnd: (evt) => {
+                    const movedItem = COLUMN_DEFS.splice(evt.oldIndex, 1)[0];
+                    COLUMN_DEFS.splice(evt.newIndex, 0, movedItem);
+                    saveAndRender();
+                }
             });
         }
 
-        function toggleCol(index) {
-            VISIBLE_COLS[index] = !VISIBLE_COLS[index];
-            instantSearch(); // Re-render table instantly with new column selection
+        function toggle(i) { COLUMN_DEFS[i].visible = !COLUMN_DEFS[i].visible; saveAndRender(); }
+        function saveAndRender() {
+            localStorage.setItem("fast_col_order_v2", JSON.stringify(COLUMN_DEFS));
+            instantSearch();
         }
 
         function instantSearch() {
             const q = document.getElementById("searchBar").value.toUpperCase();
-            if(q.length < 2) { 
-                document.getElementById('table-output').innerHTML = '<p style="text-align:center; padding:100px; color:#ccc;">Type to search cached records.</p>'; 
-                return; 
-            }
+            if(q.length < 2) { document.getElementById('table-output').innerHTML = ""; return; }
             const filtered = CACHE.filter(r => r.join(" ").toUpperCase().includes(q)).slice(0, 100);
             render(filtered);
         }
 
         function render(rows) {
+            const visibleDefs = COLUMN_DEFS.filter(c => c.visible);
             let html = `<table><thead><tr>`;
-            HEADERS.forEach((h, i) => { if(VISIBLE_COLS[i]) html += `<th>${h}</th>`; });
+            visibleDefs.forEach(c => html += `<th>${c.name}</th>`);
             html += `</tr></thead><tbody>`;
             rows.forEach(row => {
                 html += `<tr>`;
-                row.forEach((cell, i) => { if(VISIBLE_COLS[i]) html += `<td>${cell || ''}</td>`; });
+                visibleDefs.forEach(c => html += `<td>${row[c.index] || ''}</td>`);
                 html += `</tr>`;
             });
             html += `</tbody></table>`;
             document.getElementById('table-output').innerHTML = html;
         }
 
-        function logout() { localStorage.clear(); location.reload(); }
+        function logout() { localStorage.removeItem("fast_active"); location.reload(); }
     </script>
 </body>
 </html>

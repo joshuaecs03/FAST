@@ -7,7 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
-        :root { --ecs-orange: #D4631E; --ecs-dark: #111827; --ecs-border: #E5E7EB; --ecs-bg: #F9FAFB; }
+        :root { --ecs-orange: #D4631E; --ecs-dark: #111827; --ecs-border: #E5E7EB; --ecs-bg: #F9FAFB; --sidebar-width: 260px; }
+        
         body { font-family: 'Inter', sans-serif; margin: 0; background: var(--ecs-bg); color: var(--ecs-dark); height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
 
@@ -19,30 +20,38 @@
         input.auth-input { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid var(--ecs-border); border-radius: 8px; box-sizing: border-box; outline: none; }
         button.primary { width: 100%; padding: 14px; background: var(--ecs-orange); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; text-transform: uppercase; margin-top: 10px; }
 
-        /* DASHBOARD */
-        #dashboard { display: flex; flex-direction: column; height: 100vh; }
-        header { background: white; padding: 0 30px; height: 70px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
-        .search-area { padding: 20px 30px; background: white; border-bottom: 1px solid var(--ecs-border); display: flex; gap: 15px; align-items: center; justify-content: center; }
-        #searchBar { width: 100%; max-width: 600px; padding: 14px 20px; border: 1px solid var(--ecs-border); border-radius: 50px; font-size: 15px; outline: none; }
+        /* MAIN LAYOUT */
+        #dashboard { display: flex; height: 100vh; }
+
+        /* SIDEBAR */
+        #sidebar { width: var(--sidebar-width); background: #1F2937; color: white; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 25px; border-bottom: 1px solid #374151; }
+        .nav-item { padding: 15px 25px; cursor: pointer; font-size: 13px; color: #9CA3AF; transition: 0.2s; border-left: 4px solid transparent; }
+        .nav-item:hover { background: #374151; color: white; }
+        .nav-item.active { background: #111827; color: white; border-left: 4px solid var(--ecs-orange); font-weight: 600; }
+        .nav-label { font-size: 10px; color: #6B7280; padding: 20px 25px 5px 25px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* CONTENT AREA */
+        #main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        header { background: white; padding: 0 30px; height: 64px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
+        
+        .search-area { padding: 20px 30px; background: white; border-bottom: 1px solid var(--ecs-border); display: flex; gap: 15px; align-items: center; }
+        #searchBar { flex: 1; padding: 12px 20px; border: 1px solid var(--ecs-border); border-radius: 50px; font-size: 14px; outline: none; }
 
         /* COLUMN SELECTOR */
-        .dropdown { position: relative; display: inline-block; }
-        .dropbtn { background: white; border: 1px solid var(--ecs-border); padding: 12px 18px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        .dropdown-content { display: none; position: absolute; right: 0; background-color: white; min-width: 300px; max-height: 500px; overflow-y: auto; box-shadow: 0px 8px 16px rgba(0,0,0,0.1); z-index: 100; border-radius: 8px; padding: 15px; border: 1px solid var(--ecs-border); }
+        .dropdown { position: relative; }
+        .dropbtn { background: white; border: 1px solid var(--ecs-border); padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .dropdown-content { display: none; position: absolute; right: 0; background: white; min-width: 280px; max-height: 450px; overflow-y: auto; box-shadow: 0px 8px 16px rgba(0,0,0,0.1); z-index: 100; border-radius: 8px; padding: 15px; border: 1px solid var(--ecs-border); }
         .dropdown:hover .dropdown-content { display: block; }
-        
-        .col-item { display: flex; align-items: center; gap: 10px; font-size: 12px; padding: 8px; background: #fff; border: 1px solid #f3f3f3; margin-bottom: 4px; border-radius: 4px; cursor: grab; }
-        .col-item:active { cursor: grabbing; }
-        .handle { color: #ccc; cursor: grab; padding-right: 5px; }
+        .col-item { display: flex; align-items: center; gap: 10px; font-size: 12px; padding: 6px; background: #fff; border-bottom: 1px solid #f3f3f3; cursor: grab; }
 
         /* TABLE */
-        .table-wrapper { flex: 1; overflow: auto; background: white; margin: 15px 25px; border-radius: 8px; border: 1px solid var(--ecs-border); }
+        .table-wrapper { flex: 1; overflow: auto; background: white; margin: 15px; border-radius: 8px; border: 1px solid var(--ecs-border); }
         table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
-        th { background: #F9FAFB; padding: 14px; border-bottom: 1px solid var(--ecs-border); position: sticky; top: 0; text-align: left; font-weight: 600; color: #6B7280; text-transform: uppercase; font-size: 10px; z-index: 20; }
-        td { padding: 10px 14px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; color: #374151; }
+        th { background: #F9FAFB; padding: 14px; border-bottom: 1px solid var(--ecs-border); position: sticky; top: 0; text-align: left; font-weight: 600; color: #6B7280; font-size: 10px; z-index: 20; }
+        td { padding: 10px 14px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; }
         
         td:first-child, th:first-child { position: sticky; left: 0; background: inherit; z-index: 21; border-right: 1px solid var(--ecs-border); }
-        th:first-child { z-index: 30; background: #F9FAFB; }
         tr:hover td { background-color: #FFF9F5; }
     </style>
 </head>
@@ -59,30 +68,45 @@
     </div>
 
     <div id="dashboard" class="hidden">
-        <header>
-            <div class="brand-logo" style="font-size: 1.5rem; margin: 0; letter-spacing: 4px;">F<span>A</span>ST</div>
-            <button onclick="logout()" style="background:none; border:1px solid #ddd; padding:5px 15px; cursor:pointer; border-radius:5px; font-size:11px;">Logout</button>
-        </header>
-        
-        <div class="search-area">
-            <input type="text" id="searchBar" oninput="instantSearch()" placeholder="Initial sync..." disabled>
-            <div class="dropdown">
-                <button class="dropbtn">⚙️ Columns</button>
-                <div class="dropdown-content">
-                    <p style="margin:0 0 10px 0; font-size:11px; color:#666;">Drag to reorder. Check to show.</p>
-                    <div id="checkbox-list"></div>
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-logo" style="font-size: 1.5rem; letter-spacing: 4px;">F<span>A</span>ST</div>
+            </div>
+            <div class="nav-label">Status Views</div>
+            <div class="nav-item active" onclick="setView('All Jobs', this)">All Jobs</div>
+            <div class="nav-item" onclick="setView('Completed Jobs', this)">Completed Jobs</div>
+            <div class="nav-item" onclick="setView('Project Awaiting Approval', this)">Project Awaiting Approval</div>
+            <div class="nav-item" onclick="setView('Testing Only Invoicing', this)">Testing Only Invoicing</div>
+            <div class="nav-item" onclick="setView('Completed Job - Factored', this)">Completed Job - Factored</div>
+            
+            <div style="margin-top: auto; padding: 20px; border-top: 1px solid #374151;">
+                <button onclick="logout()" style="width:100%; background:none; border:1px solid #4B5563; color:white; padding:8px; cursor:pointer; font-size:11px;">Logout</button>
+            </div>
+        </nav>
+
+        <main id="main-content">
+            <header>
+                <h2 id="view-title" style="font-size: 1.1rem; font-weight: 600;">All Jobs</h2>
+                <div id="sync-status" style="font-size:11px; color:var(--ecs-orange);">Syncing...</div>
+            </header>
+            
+            <div class="search-area">
+                <input type="text" id="searchBar" oninput="instantSearch()" placeholder="Search in this view...">
+                <div class="dropdown">
+                    <button class="dropbtn">⚙️ Columns</button>
+                    <div class="dropdown-content">
+                        <div id="checkbox-list"></div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="table-wrapper"><div id="table-output"></div></div>
+            <div class="table-wrapper"><div id="table-output"></div></div>
+        </main>
     </div>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyoO-wu2p2j463ePFB5kW59yv45-hxBo7gV8EK0hqbV5t5q1MVn2K8nvWIOFmk4Q0OxSA/exec";
-        let CACHE = [];
-        let COLUMN_DEFS = []; // Stores objects: { name: string, visible: bool, index: original_index }
-
+        let CACHE = [], COLUMN_DEFS = [], CURRENT_VIEW = 'All Jobs';
         const DEFAULT_COLS = ["File Number", "File Name", "Status", "Customer Name", "Loss Address", "State", "Insurance Company", "Referred By", "Referred By Organization Name", "Assigned Adjuster"];
 
         window.onload = () => { if (localStorage.getItem("fast_active") === "true") init(); };
@@ -98,33 +122,34 @@
         async function init() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
-            
             const res = await fetch(`${SCRIPT_URL}?action=search&q=`); 
             const json = await res.json();
-            const rawHeaders = json.headers;
             CACHE = json.data;
-
-            // Load saved order or create new
+            
             const saved = localStorage.getItem("fast_col_order_v2");
-            if (saved) {
-                COLUMN_DEFS = JSON.parse(saved);
-            } else {
-                // Initialize with your requested defaults first
-                const ordered = [];
+            if (saved) { COLUMN_DEFS = JSON.parse(saved); } 
+            else {
+                let ordered = [];
                 DEFAULT_COLS.forEach(name => {
-                    let idx = rawHeaders.indexOf(name);
+                    let idx = json.headers.indexOf(name);
                     if(idx !== -1) ordered.push({ name: name, visible: true, index: idx });
                 });
-                // Add the rest as hidden
-                rawHeaders.forEach((name, idx) => {
+                json.headers.forEach((name, idx) => {
                     if(!DEFAULT_COLS.includes(name)) ordered.push({ name: name, visible: false, index: idx });
                 });
                 COLUMN_DEFS = ordered;
             }
-
             buildColSelector();
-            const sb = document.getElementById('searchBar');
-            sb.disabled = false; sb.placeholder = "Search records...";
+            document.getElementById('sync-status').innerText = "✓ Ready";
+            instantSearch();
+        }
+
+        function setView(viewName, el) {
+            CURRENT_VIEW = viewName;
+            document.getElementById('view-title').innerText = viewName;
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+            instantSearch();
         }
 
         function buildColSelector() {
@@ -133,33 +158,29 @@
             COLUMN_DEFS.forEach((col, i) => {
                 const item = document.createElement('div');
                 item.className = 'col-item';
-                item.setAttribute('data-id', i);
-                item.innerHTML = `<span class="handle">⠿</span><input type="checkbox" id="c-${i}" ${col.visible ? 'checked' : ''} onchange="toggle(${i})"><label style="flex:1; margin-left:8px;">${col.name}</label>`;
+                item.innerHTML = `<span style="color:#ccc">⠿</span><input type="checkbox" ${col.visible ? 'checked' : ''} onchange="toggle(${i})"><label style="flex:1; margin-left:8px;">${col.name}</label>`;
                 list.appendChild(item);
             });
-
-            new Sortable(list, {
-                handle: '.handle',
-                animation: 150,
-                onEnd: (evt) => {
-                    const movedItem = COLUMN_DEFS.splice(evt.oldIndex, 1)[0];
-                    COLUMN_DEFS.splice(evt.newIndex, 0, movedItem);
-                    saveAndRender();
-                }
-            });
+            new Sortable(list, { animation: 150, onEnd: (evt) => {
+                const moved = COLUMN_DEFS.splice(evt.oldIndex, 1)[0];
+                COLUMN_DEFS.splice(evt.newIndex, 0, moved);
+                localStorage.setItem("fast_col_order_v2", JSON.stringify(COLUMN_DEFS));
+                instantSearch();
+            }});
         }
 
-        function toggle(i) { COLUMN_DEFS[i].visible = !COLUMN_DEFS[i].visible; saveAndRender(); }
-        function saveAndRender() {
-            localStorage.setItem("fast_col_order_v2", JSON.stringify(COLUMN_DEFS));
-            instantSearch();
-        }
+        function toggle(i) { COLUMN_DEFS[i].visible = !COLUMN_DEFS[i].visible; localStorage.setItem("fast_col_order_v2", JSON.stringify(COLUMN_DEFS)); instantSearch(); }
 
         function instantSearch() {
             const q = document.getElementById("searchBar").value.toUpperCase();
-            if(q.length < 2) { document.getElementById('table-output').innerHTML = ""; return; }
-            const filtered = CACHE.filter(r => r.join(" ").toUpperCase().includes(q)).slice(0, 100);
-            render(filtered);
+            const statusIdx = COLUMN_DEFS.find(c => c.name === "Status")?.index;
+
+            let filtered = CACHE.filter(row => {
+                const matchesView = (CURRENT_VIEW === 'All Jobs' || row[statusIdx] === CURRENT_VIEW);
+                const matchesSearch = row.join(" ").toUpperCase().includes(q);
+                return matchesView && matchesSearch;
+            });
+            render(filtered.slice(0, 100));
         }
 
         function render(rows) {

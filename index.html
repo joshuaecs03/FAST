@@ -10,35 +10,41 @@
         body { font-family: 'Inter', sans-serif; margin: 0; background: var(--ecs-bg); color: var(--ecs-dark); height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
 
-        /* AUTH UI - BRANDED LOGO */
+        /* AUTH UI */
         #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: #f3f4f6; }
         .login-card { background: white; padding: 60px; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1); width: 340px; text-align: center; }
         .brand-logo { font-family: 'Montserrat', sans-serif; font-size: 3.2rem; margin: 0 0 40px 0; letter-spacing: 8px; font-weight: 700; color: var(--ecs-dark); }
         .brand-logo span { color: var(--ecs-orange); }
-
         input.auth-input { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid var(--ecs-border); border-radius: 8px; box-sizing: border-box; outline: none; }
         button.primary { width: 100%; padding: 14px; background: var(--ecs-orange); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; text-transform: uppercase; margin-top: 10px; }
 
         /* DASHBOARD */
         #dashboard { display: flex; flex-direction: column; height: 100vh; }
         header { background: white; padding: 0 30px; height: 70px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
-        .search-area { padding: 30px; background: white; border-bottom: 1px solid var(--ecs-border); text-align: center; }
-        #searchBar { width: 100%; max-width: 800px; padding: 16px 25px; border: 1px solid var(--ecs-border); border-radius: 50px; font-size: 16px; outline: none; transition: 0.3s; }
-        #searchBar:disabled { background: #eee; cursor: not-allowed; }
-        #searchBar:focus { border-color: var(--ecs-orange); box-shadow: 0 0 0 4px rgba(212, 99, 30, 0.1); }
+        
+        .search-area { padding: 20px 30px; background: white; border-bottom: 1px solid var(--ecs-border); display: flex; gap: 15px; align-items: center; justify-content: center; }
+        #searchBar { width: 100%; max-width: 600px; padding: 14px 20px; border: 1px solid var(--ecs-border); border-radius: 50px; font-size: 15px; outline: none; }
+
+        /* COLUMN SELECTOR DROPDOWN */
+        .dropdown { position: relative; display: inline-block; }
+        .dropbtn { background: white; border: 1px solid var(--ecs-border); padding: 12px 18px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .dropdown-content { display: none; position: absolute; right: 0; background-color: white; min-width: 250px; max-height: 400px; overflow-y: auto; box-shadow: 0px 8px 16px rgba(0,0,0,0.1); z-index: 100; border-radius: 8px; padding: 15px; border: 1px solid var(--ecs-border); text-align: left; }
+        .dropdown:hover .dropdown-content { display: block; }
+        .col-item { display: flex; align-items: center; gap: 10px; font-size: 12px; padding: 6px 0; border-bottom: 1px solid #f9f9f9; cursor: pointer; }
+        .col-item:hover { background: #fcfcfc; }
 
         /* TABLE */
-        .table-wrapper { flex: 1; overflow: auto; background: white; margin: 20px; border-radius: 8px; border: 1px solid var(--ecs-border); }
+        .table-wrapper { flex: 1; overflow: auto; background: white; margin: 15px 25px; border-radius: 8px; border: 1px solid var(--ecs-border); }
         table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
-        th { background: #F9FAFB; padding: 16px; border-bottom: 1px solid var(--ecs-border); position: sticky; top: 0; text-align: left; font-weight: 600; color: #6B7280; text-transform: uppercase; font-size: 10px; z-index: 20; }
-        td { padding: 12px 16px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; }
+        th { background: #F9FAFB; padding: 14px; border-bottom: 1px solid var(--ecs-border); position: sticky; top: 0; text-align: left; font-weight: 600; color: #6B7280; text-transform: uppercase; font-size: 10px; z-index: 20; }
+        td { padding: 10px 14px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; color: #374151; }
         
-        /* Freeze first column */
+        /* Freeze first column (Job #) */
         td:first-child, th:first-child { position: sticky; left: 0; background: inherit; z-index: 21; border-right: 1px solid var(--ecs-border); }
         th:first-child { z-index: 30; background: #F9FAFB; }
         tr:hover td { background-color: #FFF9F5; }
 
-        .status-tag { font-size: 11px; color: var(--ecs-orange); font-weight: bold; margin-top: 10px; }
+        .sync-status { font-size: 11px; color: var(--ecs-orange); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -56,12 +62,20 @@
     <div id="dashboard" class="hidden">
         <header>
             <div class="brand-logo" style="font-size: 1.5rem; margin: 0; letter-spacing: 4px;">F<span>A</span>ST</div>
-            <button onclick="logout()" style="background:none; border:1px solid #ddd; padding:5px 15px; cursor:pointer; border-radius:5px;">Logout</button>
+            <div id="sync-status" class="sync-status">Syncing Data...</div>
+            <button onclick="logout()" style="background:none; border:1px solid #ddd; padding:5px 15px; cursor:pointer; border-radius:5px; font-size:11px;">Logout</button>
         </header>
         
         <div class="search-area">
             <input type="text" id="searchBar" oninput="instantSearch()" placeholder="Initial sync in progress..." disabled>
-            <div id="sync-status" class="status-tag">Syncing with Xcelerate...</div>
+            
+            <div class="dropdown">
+                <button class="dropbtn" id="colBtn">⚙️ Columns</button>
+                <div class="dropdown-content" id="col-selector">
+                    <p style="margin:0 0 10px 0; font-weight:bold; font-size:12px;">Visible Columns:</p>
+                    <div id="checkbox-list" style="color:#999; font-size:11px;">Loading headers...</div>
+                </div>
+            </div>
         </div>
 
         <div class="table-wrapper">
@@ -73,6 +87,7 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyoO-wu2p2j463ePFB5kW59yv45-hxBo7gV8EK0hqbV5t5q1MVn2K8nvWIOFmk4Q0OxSA/exec";
         let CACHE = [];
         let HEADERS = [];
+        let VISIBLE_COLS = [];
 
         window.onload = () => { if (localStorage.getItem("fast_active") === "true") init(); };
 
@@ -81,10 +96,8 @@
             const pass = document.getElementById('p').value;
             const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`);
             const data = await res.json();
-            if(data.result === "success") {
-                localStorage.setItem("fast_active", "true");
-                init();
-            } else { document.getElementById('loginStatus').innerText = "Access Denied"; }
+            if(data.result === "success") { localStorage.setItem("fast_active", "true"); init(); }
+            else { document.getElementById('loginStatus').innerText = "Access Denied"; }
         }
 
         async function init() {
@@ -97,31 +110,57 @@
                 HEADERS = json.headers;
                 CACHE = json.data;
                 
-                // Enable search once data is ready
+                // Show first 12 columns by default to avoid overwhelming the view
+                VISIBLE_COLS = HEADERS.map((_, i) => i < 12);
+                
+                buildColSelector();
+
                 const sb = document.getElementById('searchBar');
                 sb.disabled = false;
                 sb.placeholder = "Search Job #, Client, or Location...";
                 document.getElementById('sync-status').innerText = "✓ System Ready";
                 document.getElementById('sync-status').style.color = "green";
             } catch(e) {
-                document.getElementById('sync-status').innerText = "Sync Failed. Refresh Page.";
+                document.getElementById('sync-status').innerText = "Sync Failed. Refresh.";
             }
+        }
+
+        function buildColSelector() {
+            const list = document.getElementById('checkbox-list');
+            list.innerHTML = ""; // Clear the loading text
+            HEADERS.forEach((h, i) => {
+                const item = document.createElement('div');
+                item.className = 'col-item';
+                item.innerHTML = `
+                    <input type="checkbox" id="col-${i}" ${VISIBLE_COLS[i] ? 'checked' : ''} onchange="toggleCol(${i})">
+                    <label for="col-${i}" style="cursor:pointer; flex:1;">${h}</label>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function toggleCol(index) {
+            VISIBLE_COLS[index] = !VISIBLE_COLS[index];
+            instantSearch(); // Re-render table instantly with new column selection
         }
 
         function instantSearch() {
             const q = document.getElementById("searchBar").value.toUpperCase();
-            if(q.length < 2) { document.getElementById('table-output').innerHTML = ""; return; }
+            if(q.length < 2) { 
+                document.getElementById('table-output').innerHTML = '<p style="text-align:center; padding:100px; color:#ccc;">Type to search cached records.</p>'; 
+                return; 
+            }
             const filtered = CACHE.filter(r => r.join(" ").toUpperCase().includes(q)).slice(0, 100);
             render(filtered);
         }
 
         function render(rows) {
             let html = `<table><thead><tr>`;
-            HEADERS.forEach(h => html += `<th>${h}</th>`);
+            HEADERS.forEach((h, i) => { if(VISIBLE_COLS[i]) html += `<th>${h}</th>`; });
             html += `</tr></thead><tbody>`;
             rows.forEach(row => {
                 html += `<tr>`;
-                row.forEach(cell => html += `<td>${cell || ''}</td>`);
+                row.forEach((cell, i) => { if(VISIBLE_COLS[i]) html += `<td>${cell || ''}</td>`; });
                 html += `</tr>`;
             });
             html += `</tbody></table>`;

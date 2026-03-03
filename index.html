@@ -5,86 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAST | ECS Asbestos</title>
     <style>
-        /* ECS BRANDING COLORS */
         :root { 
             --ecs-orange: #D4631E; 
             --ecs-dark: #333333;
             --ecs-gray: #fcfcfc;
-            --pure-red: #ff0000;
         }
 
         body { 
             font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif; 
-            margin: 0; 
-            background-color: #f4f4f4; 
-            color: var(--ecs-dark);
+            margin: 0; background-color: #f4f4f4; color: var(--ecs-dark);
         }
 
         .hidden { display: none !important; }
 
-        /* LOGIN SCREEN - Mimicking Report Summary Box */
+        /* Login Screen */
         #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; }
         .login-card { 
-            background: white; 
-            padding: 40px; 
-            border-radius: 2px; 
-            border: 1px solid #eee;
-            border-top: 4px solid var(--ecs-orange);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            width: 340px; 
-            text-align: center; 
+            background: white; padding: 40px; border-radius: 2px; 
+            border: 1px solid #eee; border-top: 4px solid var(--ecs-orange);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 340px; text-align: center; 
         }
         h1 { color: var(--ecs-orange); font-size: 2.2rem; margin: 0 0 10px 0; letter-spacing: 3px; font-weight: 700; }
         input { 
-            width: 100%; padding: 12px; margin: 10px 0; 
-            border: 1px solid #f0f0f0; border-radius: 0; 
-            background: var(--ecs-gray); font-size: 14px; 
+            width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #f0f0f0; 
+            background: var(--ecs-gray); font-size: 14px; outline: none;
         }
         button { 
-            width: 100%; padding: 12px; 
-            background: var(--ecs-orange); color: white; 
-            border: none; cursor: pointer; font-weight: 700; 
-            letter-spacing: 1.5px; text-transform: uppercase; margin-top: 15px; 
+            width: 100%; padding: 12px; background: var(--ecs-orange); color: white; 
+            border: none; cursor: pointer; font-weight: 700; text-transform: uppercase; margin-top: 15px; 
         }
-        button:hover { opacity: 0.9; }
 
-        /* DASHBOARD - Mimicking PDF Breakdown */
+        /* Dashboard */
         header { 
-            background: white; color: var(--ecs-dark); 
-            padding: 15px 25px; display: flex; justify-content: space-between; 
-            align-items: center; border-bottom: 2px solid var(--ecs-orange);
+            background: white; padding: 15px 25px; display: flex; 
+            justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ecs-orange);
         }
         .controls { 
-            padding: 12px 25px; background: var(--ecs-gray); 
-            border-bottom: 1px solid #eee; display: flex; gap: 15px; 
+            padding: 20px 25px; background: white; border-bottom: 1px solid #eee; 
+            display: flex; flex-direction: column; gap: 10px; text-align: center;
         }
         #searchBar { 
-            flex: 1; padding: 10px; border: 1px solid #eee; 
-            font-size: 13px; outline: none;
+            padding: 15px; border: 1px solid var(--ecs-orange); 
+            font-size: 16px; width: 60%; margin: 0 auto; border-radius: 4px;
         }
 
-        /* TABLE - Mimicking "Full Project Breakdown" style */
-        .table-wrapper { overflow: auto; height: calc(100vh - 130px); background: white; }
-        table { width: 100%; border-collapse: collapse; font-size: 10px; }
+        /* Table Aesthetics */
+        .table-wrapper { overflow: auto; height: calc(100vh - 180px); background: white; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
         th { 
-            background-color: #fafafa; color: #999; 
-            font-size: 9px; text-transform: uppercase; 
-            padding: 10px; border: 1px solid #eee;
+            background-color: #fafafa; color: #888; font-size: 10px; 
+            text-transform: uppercase; padding: 12px; border: 1px solid #eee;
             position: sticky; top: 0; z-index: 10;
         }
-        td { 
-            border: 1px solid #f0f0f0; padding: 8px; 
-            text-align: center; color: #333; 
-        }
-        tr:hover { background-color: #fcfcfc; }
-        
-        /* Highlighting missing data like the script */
-        .missing { color: var(--pure-red); font-weight: bold; }
+        td { border: 1px solid #f0f0f0; padding: 10px; text-align: left; }
+        tr:nth-child(even) { background-color: #fafafa; }
+        tr:hover { background-color: #fff9f5; }
 
         .spinner { 
             border: 3px solid #f3f3f3; border-top: 3px solid var(--ecs-orange); 
-            border-radius: 50%; width: 24px; height: 24px; 
-            animation: spin 1s linear infinite; margin: auto;
+            border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -97,109 +76,101 @@
             <p style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Action Item Portal</p>
             <input type="text" id="userInput" placeholder="Email Address">
             <input type="password" id="passInput" placeholder="Password">
-            <button id="loginBtn" onclick="handleLogin()">Sign In</button>
-            <div id="loginLoader" class="hidden"><div class="spinner"></div></div>
-            <p id="status" style="color: var(--pure-red); font-size: 11px; margin-top: 15px;"></p>
+            <button onclick="handleLogin()">Sign In</button>
+            <p id="status" style="color: red; font-size: 11px; margin-top: 15px;"></p>
         </div>
     </div>
 
     <div id="dashboard" class="hidden">
         <header>
             <div style="font-weight: 700; color: var(--ecs-orange); font-size: 1.2rem;">FAST PORTAL</div>
-            <div id="user-display" style="font-size: 10px; color: #666; font-weight: bold;"></div>
-            <button onclick="logout()" style="width:auto; padding: 5px 12px; font-size: 10px; background: #666;">Logout</button>
+            <button onclick="logout()" style="width:auto; padding: 5px 12px; font-size: 10px; background: #666; border: none; color: white; cursor: pointer;">LOGOUT</button>
         </header>
         
         <div class="controls">
-            <input type="text" id="searchBar" onkeyup="filterTable()" placeholder="Filter records by any field...">
+            <p style="font-size: 12px; color: #666; margin: 0;">Enter a Job Number, State, or Name to load records:</p>
+            <input type="text" id="searchBar" onkeyup="filterTable()" placeholder="Type to search Xcelerate data...">
         </div>
 
-        <div class="table-wrapper" id="table-output">
-            <div style="padding: 50px; text-align: center;"><div class="spinner"></div></div>
+        <div id="table-output" class="table-wrapper">
+            <div id="placeholder-text" style="padding: 100px; text-align: center; color: #ccc;">
+                <p>Data will appear here after you start searching.</p>
+            </div>
         </div>
     </div>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwarttJ3JBpEyGUGCROHx7ctdpX9xEMj8qrgX48huawx5-xEWtvx55NU3oR-frBxDfcyQ/exec";
+        let CACHED_DATA = null;
 
         window.onload = function() {
             if (localStorage.getItem("fast_logged_in") === "true") {
                 showDashboard();
-                fetchData();
+                fetchData(); // Pre-fetch data in background
             }
         };
 
         async function handleLogin() {
             const u = document.getElementById('userInput').value;
             const p = document.getElementById('passInput').value;
-            const status = document.getElementById('status');
-            
-            status.innerText = "VERIFYING...";
-            
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
                 const data = await res.json();
-                
                 if(data.result === "success") {
                     localStorage.setItem("fast_logged_in", "true");
-                    localStorage.setItem("fast_user_email", u);
                     showDashboard();
                     fetchData();
                 } else {
-                    status.innerText = "INVALID CREDENTIALS";
+                    document.getElementById('status').innerText = "INVALID CREDENTIALS";
                 }
-            } catch(e) {
-                status.innerText = "CONNECTION ERROR";
-            }
+            } catch(e) { document.getElementById('status').innerText = "CONNECTION ERROR"; }
         }
 
-        function logout() {
-            localStorage.removeItem("fast_logged_in");
-            location.reload();
-        }
+        function logout() { localStorage.removeItem("fast_logged_in"); location.reload(); }
 
         function showDashboard() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('user-display').innerText = localStorage.getItem("fast_user_email").toUpperCase();
         }
 
         async function fetchData() {
             const res = await fetch(`${SCRIPT_URL}?action=getData`);
             const json = await res.json();
-            renderTable(json.data);
+            CACHED_DATA = json.data;
         }
 
-        function renderTable(dataArray) {
-            if (!dataArray || dataArray.length === 0) return;
-            const headers = dataArray[0];
-            const rows = dataArray.slice(1);
+        function filterTable() {
+            const query = document.getElementById("searchBar").value.toUpperCase();
+            const output = document.getElementById("table-output");
+
+            // Don't render anything if search is empty
+            if (query.length < 1) {
+                output.innerHTML = '<div style="padding: 100px; text-align: center; color: #ccc;"><p>Data will appear here after you start searching.</p></div>';
+                return;
+            }
+
+            if (!CACHED_DATA) return;
+
+            const headers = CACHED_DATA[0];
+            const rows = CACHED_DATA.slice(1);
             
+            // Filter logic
+            const filteredRows = rows.filter(row => row.join(" ").toUpperCase().includes(query));
+
             let html = `<table id="mainTable"><thead><tr>`;
             headers.forEach(h => html += `<th>${h}</th>`);
             html += `</tr></thead><tbody>`;
             
-            rows.forEach(row => {
+            filteredRows.forEach(row => {
                 html += `<tr>`;
                 row.forEach(cell => {
-                    // Mimic the "styleMissing" logic from your script
-                    let content = (!cell || cell.toString().trim() === "") 
-                        ? `<span class="missing">MISSING</span>` 
-                        : cell;
-                    html += `<td>${content}</td>`;
+                    // Removed the "MISSING" highlight - just shows empty space now
+                    html += `<td>${cell || ''}</td>`;
                 });
                 html += `</tr>`;
             });
             html += `</tbody></table>`;
-            document.getElementById('table-output').innerHTML = html;
-        }
-
-        function filterTable() {
-            const filter = document.getElementById("searchBar").value.toUpperCase();
-            const rows = document.getElementById("mainTable").getElementsByTagName("tr");
-            for (let i = 1; i < rows.length; i++) {
-                rows[i].style.display = rows[i].innerText.toUpperCase().includes(filter) ? "" : "none";
-            }
+            output.innerHTML = html;
         }
     </script>
 </body>

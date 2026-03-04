@@ -23,11 +23,7 @@
         .sidebar-logo { font-family: 'Montserrat', sans-serif; color: white; font-weight: 700; text-transform: uppercase; letter-spacing: 4px; font-size: 1.6rem; }
         .sidebar-logo span { color: var(--ecs-orange); }
 
-        .nav-label { font-size: 10px; color: #6B7280; padding: 25px 30px 5px 30px; text-transform: uppercase; font-weight: 600; }
-        .nav-item { padding: 16px 30px; cursor: pointer; font-size: 13px; color: #9CA3AF; transition: 0.2s; border-left: 4px solid transparent; display: flex; align-items: center; justify-content: space-between; }
-        .nav-item.active { background: #111827; color: white; border-left: 4px solid var(--ecs-orange); font-weight: 600; }
-
-        #main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: white; }
+        #main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: white; position: relative; }
         header { background: white; padding: 0 20px; height: 70px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
         
         /* TABLE */
@@ -39,7 +35,7 @@
         tr:hover td { background-color: #FFF9F5; }
 
         /* DRAWER */
-        #audit-drawer { position: fixed; right: -500px; top: 0; width: 450px; height: 100vh; background: white; border-left: 1px solid var(--ecs-border); transition: 0.3s ease; z-index: 2000; display: flex; flex-direction: column; }
+        #audit-drawer { position: fixed; right: -500px; top: 0; width: 450px; height: 100vh; background: white; border-left: 1px solid var(--ecs-border); transition: 0.3s ease; z-index: 2000; display: flex; flex-direction: column; box-shadow: -10px 0 30px rgba(0,0,0,0.05); }
         #audit-drawer.open { right: 0; }
         .drawer-header { padding: 20px; border-bottom: 1px solid var(--ecs-border); display: flex; justify-content: space-between; align-items: center; }
         .drawer-body { flex: 1; overflow-y: auto; padding: 20px; background: #F3F4F6; }
@@ -53,7 +49,7 @@
     <div id="login-screen">
         <div class="login-card">
             <div class="sidebar-logo" style="color:black; font-size:3.5rem; margin-bottom: 30px;">F<span>A</span>ST</div>
-            <p style="color: #6B7280; margin-bottom: 40px;">Integrated Workspace Sign-In</p>
+            <p style="color: #6B7280; margin-bottom: 40px;">Workspace Sign-In & CRM Access</p>
             <button class="btn-login" onclick="startAuth()">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_\"G\"_Logo.svg" width="18" alt="">
                 Sign in with Google
@@ -90,7 +86,7 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/a/macros/ecs-asbestos.com/s/AKfycbxojCfjk5R8xJALWqW5H-f3QBaduGhKeTW5YEDX0W-2jYZV3S-teLmDUff1lLuDX867/exec";
+        const SCRIPT_URL = "https://script.google.com/a/macros/ecs-asbestos.com/s/AKfycbyoO-wu2p2j463ePFB5kW59yv45-hxBo7gV8EK0hqbV5t5q1MVn2K8nvWIOFmk4Q0OxSA/exec";
         
         function startAuth() { window.open(`${SCRIPT_URL}?action=user_login`, "Auth", "width=500,height=600"); }
 
@@ -99,7 +95,9 @@
                 localStorage.setItem("fast_active", "true");
                 localStorage.setItem("fast_user_email", event.data.email);
                 init();
-            } else if (event.data && event.data.result === "denied") { alert(event.data.message); }
+            } else if (event.data && event.data.result === "denied") { 
+                alert(event.data.message); 
+            }
         }, false);
 
         let UI_CACHE = JSON.parse(localStorage.getItem('fast_data_cache') || "[]");
@@ -118,26 +116,30 @@
         }
 
         async function performSurgicalSync() {
-            const res = await fetch(`${SCRIPT_URL}?action=sync_surgical&hashes=${encodeURIComponent(JSON.stringify(ROW_HASHES))}`);
-            const json = await res.json();
-            if (json.result === "success" && json.updates.length > 0) {
-                HEADERS = json.headers;
-                COLUMN_DEFS = HEADERS.map(h => ({ name: h, visible: true, width: 120 }));
-                const fIdx = HEADERS.indexOf("File Number");
-                json.updates.forEach(up => {
-                    const fNum = up.data[fIdx].toString();
-                    const exIdx = UI_CACHE.findIndex(r => r[fIdx].toString() === fNum);
-                    if(exIdx !== -1) UI_CACHE[exIdx] = up.data; else UI_CACHE.unshift(up.data);
-                    ROW_HASHES[fNum] = up.hash;
-                });
-                localStorage.setItem('fast_data_cache', JSON.stringify(UI_CACHE));
-                localStorage.setItem('fast_hash_cache', JSON.stringify(ROW_HASHES));
-                renderTable();
-            }
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=sync_surgical&hashes=${encodeURIComponent(JSON.stringify(ROW_HASHES))}`);
+                const json = await res.json();
+                if (json.result === "success" && json.updates.length > 0) {
+                    HEADERS = json.headers;
+                    COLUMN_DEFS = HEADERS.map(h => ({ name: h, visible: true, width: 120 }));
+                    const fIdx = HEADERS.indexOf("File Number");
+                    json.updates.forEach(up => {
+                        const fNum = up.data[fIdx].toString();
+                        const exIdx = UI_CACHE.findIndex(r => r[fIdx].toString() === fNum);
+                        if(exIdx !== -1) UI_CACHE[exIdx] = up.data; else UI_CACHE.unshift(up.data);
+                        ROW_HASHES[fNum] = up.hash;
+                    });
+                    localStorage.setItem('fast_data_cache', JSON.stringify(UI_CACHE));
+                    localStorage.setItem('fast_hash_cache', JSON.stringify(ROW_HASHES));
+                    renderTable();
+                }
+                document.getElementById('sync-status').innerText = "✓ " + new Date().toLocaleTimeString();
+            } catch(e) {}
         }
 
         function renderTable() {
             const fileIdx = HEADERS.indexOf("File Number"), nameIdx = HEADERS.indexOf("File Name");
+            if(fileIdx === -1) return;
             let html = `<table><thead><tr>`;
             COLUMN_DEFS.forEach(def => html += `<th style="width:${def.width}px"><div class="th-content">${def.name}</div></th>`);
             html += `</tr></thead><tbody>`;
@@ -161,6 +163,7 @@
 
         function closeDrawer() { document.getElementById('audit-drawer').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); }
         function logout() { localStorage.clear(); location.reload(); }
+        function instantSearch() { renderTable(); }
     </script>
 </body>
 </html>

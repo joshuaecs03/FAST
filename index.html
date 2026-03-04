@@ -2,171 +2,219 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAST | ECS Asbestos</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
-        :root { --ecs-orange: #D4631E; --ecs-dark: #111827; --sidebar-w: 240px; --border: #E5E7EB; }
-        body { font-family: 'Inter', sans-serif; margin: 0; background: white; height: 100vh; display: flex; overflow: hidden; }
+        :root { --ecs-orange: #D4631E; --ecs-dark: #111827; --ecs-border: #E5E7EB; --ecs-bg: #F9FAFB; --sidebar-width: 280px; }
+        body { font-family: 'Inter', sans-serif; margin: 0; background: var(--ecs-bg); color: var(--ecs-dark); height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
 
-        /* SIDEBAR (STATUS FILTERS) */
-        #sidebar { width: var(--sidebar-w); background: #F9FAFB; border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: 0.3s; z-index: 100; flex-shrink: 0; }
-        .sidebar-header { padding: 20px; font-family: 'Montserrat'; font-weight: 700; letter-spacing: 2px; border-bottom: 1px solid var(--border); }
-        .nav-item { padding: 12px 20px; cursor: pointer; color: #4B5563; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
-        .nav-item:hover, .nav-item.active { background: #F3F4F6; color: var(--ecs-orange); font-weight: 600; }
-        .count { background: #E5E7EB; padding: 2px 8px; border-radius: 10px; font-size: 10px; color: #111827; }
+        #dashboard { display: flex; height: 100vh; }
+        #sidebar { width: var(--sidebar-width); background: #1F2937; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { padding: 30px; border-bottom: 1px solid #374151; }
+        .sidebar-logo { font-family: 'Montserrat', sans-serif; color: white; font-weight: 700; text-transform: uppercase; letter-spacing: 4px; font-size: 1.6rem; }
+        .sidebar-logo span { color: var(--ecs-orange); }
 
-        /* MAIN */
-        #main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-        header { padding: 0 25px; height: 60px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
-        .search-box input { width: 280px; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); outline: none; font-size: 13px; }
+        .nav-label { font-size: 10px; color: #6B7280; padding: 25px 30px 5px 30px; text-transform: uppercase; font-weight: 600; }
+        .nav-item { padding: 16px 30px; cursor: pointer; font-size: 13px; color: #9CA3AF; transition: 0.2s; border-left: 4px solid transparent; display: flex; align-items: center; justify-content: space-between; }
+        .nav-item.active { background: #111827; color: white; border-left: 4px solid var(--ecs-orange); font-weight: 600; }
+        .nav-count { font-size: 10px; background: #374151; color: #9CA3AF; padding: 2px 8px; border-radius: 10px; }
 
-        /* DATA TABLE */
-        .table-wrapper { flex: 1; overflow: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; white-space: nowrap; }
-        th { background: white; padding: 12px; text-align: left; border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 50; }
-        td { padding: 10px 12px; border-bottom: 1px solid #F3F4F6; }
-        tr:hover td { background: #FFF9F5; cursor: pointer; }
+        #main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: white; }
+        header { background: white; padding: 0 30px; height: 70px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
+        
+        .controls-area { padding: 15px 30px; border-bottom: 1px solid var(--ecs-border); display: flex; align-items: center; gap: 15px; background: #fff; }
+        #searchBar { flex: 1; padding: 12px 20px; border: 1px solid var(--ecs-border); border-radius: 50px; outline: none; font-size: 14px; }
+        
+        .col-manager { position: relative; }
+        #col-btn { background: white; border: 1px solid var(--ecs-border); padding: 10px 20px; border-radius: 50px; cursor: pointer; font-size: 12px; font-weight: 600; }
+        
+        .col-dropdown { position: absolute; right: 0; top: 120%; background: white; border: 1px solid var(--ecs-border); border-radius: 12px; box-shadow: 0 15px 30px rgba(0,0,0,0.1); z-index: 100; width: 280px; padding: 10px; max-height: 450px; overflow-y: auto; }
+        .col-item { display: flex; align-items: center; gap: 12px; padding: 8px; font-size: 12px; cursor: move; border-radius: 6px; }
+        .col-item:hover { background: #f3f4f6; }
 
-        /* LOGS DRAWER */
-        #drawer { position: fixed; right: -500px; top: 0; width: 450px; height: 100vh; background: white; border-left: 1px solid var(--border); transition: 0.3s; z-index: 1000; box-shadow: -5px 0 20px rgba(0,0,0,0.05); }
-        #drawer.open { right: 0; }
-        .drawer-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); z-index: 999; }
-        #overlay.show { display: block; }
+        .table-wrapper { flex: 1; overflow: auto; margin: 20px; border: 1px solid var(--ecs-border); border-radius: 8px; }
+        table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; font-size: 11px; table-layout: fixed; } 
+        
+        th { background: #F9FAFB; padding: 0; position: sticky; top: 0; text-align: left; z-index: 10; border-bottom: 2px solid var(--ecs-border); border-right: 1px solid #f0f0f0; }
+        .th-content { padding: 14px 15px; display: flex; align-items: center; position: relative; height: 100%; box-sizing: border-box; }
+        .resizer { width: 8px; height: 100%; position: absolute; right: 0; top: 0; cursor: col-resize; z-index: 11; }
+        .resizer:hover { border-right: 2px solid var(--ecs-orange); }
+
+        .header-label { font-size: 10px; color: #6B7280; text-transform: uppercase; font-weight: 700; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        td { padding: 12px 15px; border-bottom: 1px solid var(--ecs-border); color: #374151; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        tr:hover td { background-color: #FFF9F5; }
+        .resizing { cursor: col-resize !important; }
+        .resizing * { pointer-events: none; }
     </style>
 </head>
 <body>
 
-    <div id="login-screen" style="position:fixed; width:100%; height:100%; background:#F3F4F6; z-index:5000; display:flex; justify-content:center; align-items:center;">
-        <div style="background:white; padding:45px; border-radius:12px; text-align:center; width:320px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
-            <h1 style="font-family:Montserrat; letter-spacing:4px; margin-bottom: 30px;">F<span style="color:var(--ecs-orange)">A</span>ST</h1>
-            <input type="text" id="user" placeholder="Username" style="width:100%; padding:12px; margin:10px 0; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
-            <input type="password" id="pass" placeholder="Password" style="width:100%; padding:12px; margin:10px 0; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
-            <button onclick="handleLogin()" style="width:100%; padding:14px; background:var(--ecs-orange); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; margin-top:10px;">Login</button>
-            <p id="msg" style="color:#EF4444; font-size:11px; margin-top:15px; min-height:15px;"></p>
+    <div id="login-screen">
+        <div style="text-align:center; padding-top:15vh;">
+            <div class="sidebar-logo" style="color:black; font-size:3rem;">F<span>A</span>ST</div>
+            <div style="width:320px; margin:40px auto; background:white; padding:40px; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.05);">
+                <input type="text" id="u" placeholder="Email" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius:8px; width:100%; box-sizing:border-box;">
+                <input type="password" id="p" placeholder="Password" style="width:100%; padding:12px; margin-bottom:25px; border:1px solid #ddd; border-radius:8px; width:100%; box-sizing:border-box;">
+                <button onclick="handleLogin()" style="width:100%; padding:14px; background:var(--ecs-orange); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; width:100%;">Sign In</button>
+            </div>
         </div>
     </div>
 
-    <div id="overlay" onclick="closeDrawer()"></div>
-    <div id="drawer">
-        <div class="drawer-header">
-            <div><h3 id="d-title" style="margin:0;">Job Logs</h3><small id="d-subtitle" style="color:#9CA3AF;"></small></div>
-            <button onclick="closeDrawer()" style="border:none; background:none; cursor:pointer; font-size:20px;">✕</button>
-        </div>
-        <div id="d-content" style="padding:20px; overflow-y:auto; height:calc(100% - 80px);"></div>
+    <div id="dashboard" class="hidden">
+        <nav id="sidebar">
+            <div class="sidebar-header"><div class="sidebar-logo">F<span>A</span>ST</div></div>
+            <div class="nav-label">Status Views</div>
+            <div class="nav-item active" onclick="setView('All Jobs', this)"><span>All Jobs</span><span class="nav-count" id="count-all">-</span></div>
+            <div class="nav-item" onclick="setView('Completed Jobs', this)"><span>Completed</span><span class="nav-count" id="count-comp">-</span></div>
+            <div class="nav-item" onclick="setView('Project Awaiting Approval', this)"><span>Awaiting Approval</span><span class="nav-count" id="count-awat">-</span></div>
+            <div class="nav-item" onclick="setView('Testing Only Invoicing', this)"><span>Testing Invoicing</span><span class="nav-count" id="count-test">-</span></div>
+            <div style="margin-top:auto; padding:20px; border-top:1px solid #374151;"><button onclick="logout()" style="width:100%; background:none; border:1px solid #4B5563; color:#9CA3AF; padding:10px; cursor:pointer; border-radius:6px;">Logout</button></div>
+        </nav>
+        <main id="main-content">
+            <header><h2 id="view-title" style="margin:0;">All Jobs</h2><div id="sync-status" style="font-size:11px; color:#9CA3AF;">Syncing...</div></header>
+            <div class="controls-area">
+                <input type="text" id="searchBar" oninput="instantSearch()" placeholder="Search data...">
+                <div class="col-manager">
+                    <button id="col-btn" onclick="toggleColMenu()">⚙ Columns</button>
+                    <div id="col-dropdown" class="col-dropdown hidden"><div id="col-list"></div></div>
+                </div>
+            </div>
+            <div class="table-wrapper"><div id="table-output"></div></div>
+        </main>
     </div>
-
-    <nav id="sidebar">
-        <div class="sidebar-header">F<span style="color:var(--ecs-orange)">A</span>ST</div>
-        <div style="padding: 15px 20px 5px; font-size: 11px; color: #9CA3AF; font-weight: 700; text-transform: uppercase;">Status Filters</div>
-        <div id="status-nav"></div>
-        <button onclick="logout()" style="margin-top:auto; padding:20px; background:none; border:none; color:#9CA3AF; cursor:pointer; border-top: 1px solid var(--border); font-size:12px;">Logout</button>
-    </nav>
-
-    <main id="main">
-        <header>
-            <h2 id="view-title" style="margin:0; font-size:1rem; font-weight: 600;">All Jobs</h2>
-            <div class="search-box"><input type="text" id="q" placeholder="Search file, name, or client..." onkeyup="runFilters()"></div>
-        </header>
-        <div class="table-wrapper" id="table-output"></div>
-    </main>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbys1p_6uN9upT77dculUMzENw3FCiB4jBiog206StyorhrC7fPrS63mLQvvthhmXIepMA/exec";
-        let RAW_DATA = [], HEADERS = [], HASHES = {}, ACTIVE_FILTER = 'All';
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyoO-wu2p2j463ePFB5kW59yv45-hxBo7gV8EK0hqbV5t5q1MVn2K8nvWIOFmk4Q0OxSA/exec";
+        
+        // --- PERSISTENT DATA CACHE ---
+        let UI_CACHE = JSON.parse(localStorage.getItem('fast_data_cache') || "[]");
+        let ROW_HASHES = JSON.parse(localStorage.getItem('fast_hash_cache') || "{}");
+        let HEADERS = JSON.parse(localStorage.getItem('fast_headers_cache') || "[]");
+        
+        let CURRENT_VIEW = 'All Jobs', COLUMN_DEFS = [], SORT_COL = null, SORT_ASC = true;
+        const DEFAULT_VISIBLE = ["File Number", "File Name", "Claim Number", "Status", "Customer Name", "Loss Address", "State", "Insurance Company", "Referred By", "Referred By Organization Name"];
+
+        window.onload = () => { 
+            if (localStorage.getItem("fast_active") === "true") {
+                init(); 
+                // Immediate render from cache before sync
+                if(UI_CACHE.length > 0) {
+                    loadColumnSettings();
+                    renderTable();
+                    renderColMenu();
+                    updateCounts();
+                }
+            } 
+        };
 
         async function handleLogin() {
-            const user = document.getElementById('user').value;
-            const pass = document.getElementById('pass').value;
-            const res = await fetch(`${SCRIPT_URL}?action=verify_login&user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`);
+            const u = document.getElementById('u').value, p = document.getElementById('p').value;
+            const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
             const data = await res.json();
-            if (data.result === "success") {
-                localStorage.setItem("fast_auth", "true");
-                document.getElementById('login-screen').classList.add('hidden');
-                init();
-            } else { document.getElementById('msg').innerText = "Invalid Login Credentials"; }
+            if(data.result === "success") { localStorage.setItem("fast_active", "true"); init(); } else alert("Denied");
         }
 
         async function init() {
             document.getElementById('login-screen').classList.add('hidden');
-            await sync();
-            setInterval(sync, 15000); // Surgical sync every 15s
+            document.getElementById('dashboard').classList.remove('hidden');
+            await performSurgicalSync();
+            setInterval(performSurgicalSync, 15000); 
+            initSortable();
         }
 
-        async function sync() {
+        async function performSurgicalSync() {
             try {
-                const res = await fetch(`${SCRIPT_URL}?action=sync_surgical&hashes=${encodeURIComponent(JSON.stringify(HASHES))}`);
+                const res = await fetch(`${SCRIPT_URL}?action=sync_surgical&hashes=${encodeURIComponent(JSON.stringify(ROW_HASHES))}`);
                 const json = await res.json();
-                if(json.result === "success") {
+                
+                if (json.result === "success" && json.updates.length > 0) {
                     HEADERS = json.headers;
-                    json.updates.forEach(u => {
-                        const fIdx = HEADERS.indexOf("File Number");
-                        const existing = RAW_DATA.findIndex(r => r[fIdx].toString() === u.data[fIdx].toString());
-                        if(existing !== -1) RAW_DATA[existing] = u.data; else RAW_DATA.unshift(u.data);
-                        HASHES[u.data[fIdx]] = u.hash;
+                    localStorage.setItem('fast_headers_cache', JSON.stringify(HEADERS));
+                    
+                    if (COLUMN_DEFS.length === 0) { loadColumnSettings(); renderColMenu(); }
+                    
+                    const fNumIdx = HEADERS.indexOf("File Number");
+                    json.updates.forEach(up => {
+                        const fNum = up.data[fNumIdx].toString();
+                        const exIdx = UI_CACHE.findIndex(r => r[fNumIdx].toString() === fNum);
+                        if(exIdx !== -1) UI_CACHE[exIdx] = up.data; else UI_CACHE.unshift(up.data);
+                        ROW_HASHES[fNum] = up.hash;
                     });
-                    buildNav(); runFilters();
+
+                    // Save new state to permanent storage
+                    localStorage.setItem('fast_data_cache', JSON.stringify(UI_CACHE));
+                    localStorage.setItem('fast_hash_cache', JSON.stringify(ROW_HASHES));
+                    
+                    renderTable();
+                    updateCounts();
                 }
-            } catch(e) {}
+                document.getElementById('sync-status').innerText = UI_CACHE.length > 0 ? "✓ Live: " + new Date().toLocaleTimeString() : "Syncing...";
+            } catch (e) { document.getElementById('sync-status').innerText = "⚠ Reconnecting..."; }
         }
 
-        function buildNav() {
-            const sIdx = HEADERS.indexOf("Status");
-            const statuses = [...new Set(RAW_DATA.map(r => r[sIdx]))].filter(Boolean).sort();
-            let html = `<div class="nav-item ${ACTIVE_FILTER==='All'?'active':''}" onclick="setFilter('All')"><span>All Jobs</span><span class="count">${RAW_DATA.length}</span></div>`;
-            statuses.forEach(s => {
-                const c = RAW_DATA.filter(r => r[sIdx] === s).length;
-                html += `<div class="nav-item ${ACTIVE_FILTER===s?'active':''}" onclick="setFilter('${s}')"><span>${s}</span><span class="count">${c}</span></div>`;
-            });
-            document.getElementById('status-nav').innerHTML = html;
+        function loadColumnSettings() {
+            const saved = localStorage.getItem('fast_column_layout');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                COLUMN_DEFS = parsed.filter(p => HEADERS.includes(p.name));
+                HEADERS.forEach(h => { if (!COLUMN_DEFS.find(c => c.name === h)) COLUMN_DEFS.push({ name: h, visible: DEFAULT_VISIBLE.includes(h), width: 120 }); });
+            } else {
+                COLUMN_DEFS = HEADERS.map(h => ({ name: h, visible: DEFAULT_VISIBLE.includes(h), width: (h === "File Number" || h === "State") ? 80 : 120 }));
+            }
         }
 
-        function setFilter(s) { ACTIVE_FILTER = s; document.getElementById('view-title').innerText = s === 'All' ? 'All Jobs' : s; buildNav(); runFilters(); }
-
-        function runFilters() {
-            const q = document.getElementById('q').value.toLowerCase();
-            const sIdx = HEADERS.indexOf("Status");
-            const filtered = RAW_DATA.filter(r => {
-                const mS = (ACTIVE_FILTER === 'All' || r[sIdx] === ACTIVE_FILTER);
-                const mQ = r.some(c => String(c).toLowerCase().includes(q));
-                return mS && mQ;
-            });
-            renderTable(filtered);
-        }
-
-        function renderTable(rows) {
-            const fIdx = HEADERS.indexOf("File Number"), nIdx = HEADERS.indexOf("File Name");
+        function renderTable() {
+            const visibleDefs = COLUMN_DEFS.filter(d => d.visible);
+            const statusIdx = HEADERS.indexOf("Status");
+            const q = document.getElementById("searchBar").value.toUpperCase();
+            let filtered = UI_CACHE.filter(row => (CURRENT_VIEW === 'All Jobs' || row[statusIdx] === CURRENT_VIEW) && row.join(" ").toUpperCase().includes(q));
+            if (SORT_COL) {
+                const sIdx = HEADERS.indexOf(SORT_COL);
+                filtered.sort((a,b) => (a[sIdx] || '').toString().localeCompare((b[sIdx] || '').toString()) * (SORT_ASC ? 1 : -1));
+            }
             let html = `<table><thead><tr>`;
-            HEADERS.forEach(h => html += `<th>${h}</th>`);
+            visibleDefs.forEach(def => {
+                html += `<th style="width: ${def.width}px"><div class="th-content"><span class="header-label" onclick="handleSort('${def.name}')">${def.name}</span><div class="resizer" onmousedown="startResize(event, '${def.name}')"></div></div></th>`;
+            });
             html += `</tr></thead><tbody>`;
-            rows.forEach(r => {
-                html += `<tr onclick="openDrawer('${r[fIdx]}','${r[nIdx]}')">`;
-                r.forEach(c => html += `<td>${c || ''}</td>`);
+            filtered.forEach(r => {
+                html += `<tr>`;
+                visibleDefs.forEach(def => html += `<td style="width: ${def.width}px">${r[HEADERS.indexOf(def.name)] || ''}</td>`);
                 html += `</tr>`;
             });
             document.getElementById('table-output').innerHTML = html + `</tbody></table>`;
         }
 
-        async function openDrawer(id, name) {
-            document.getElementById('drawer').classList.add('open');
-            document.getElementById('overlay').classList.add('show');
-            document.getElementById('d-title').innerText = name || "Job History";
-            document.getElementById('d-subtitle').innerText = "File #: " + id;
-            const res = await fetch(`${SCRIPT_URL}?action=get_logs&fileNum=${id}`);
-            const data = await res.json();
-            document.getElementById('d-content').innerHTML = data.logs.map(l => `
-                <div style="padding:15px; border-bottom:1px solid #F3F4F6; background:#fff; border-radius:8px; margin-bottom:10px; border:1px solid #eee;">
-                    <strong style="color:var(--ecs-orange); font-size:12px;">${l.Type || 'Note'}</strong>
-                    <p style="font-size:11px; margin:5px 0; color:#4B5563;">${l.Body || ''}</p>
-                    <small style="color:#9CA3AF; font-size:10px;">${l.Timestamp || ''}</small>
-                </div>`).join('') || "<p style='color:#9CA3AF;'>No history found for this project.</p>";
+        // --- Standard Logic Preserved ---
+        let currentResizer = null, startX, startWidth, colNameForResize;
+        function startResize(e, name) { e.stopPropagation(); colNameForResize = name; startX = e.pageX; const def = COLUMN_DEFS.find(d => d.name === name); startWidth = def.width; document.addEventListener('mousemove', handleMouseMove); document.addEventListener('mouseup', stopResize); document.body.classList.add('resizing'); }
+        function handleMouseMove(e) { const diff = e.pageX - startX; const def = COLUMN_DEFS.find(d => d.name === colNameForResize); def.width = Math.max(50, startWidth + diff); renderTable(); }
+        function stopResize() { document.removeEventListener('mousemove', handleMouseMove); document.removeEventListener('mouseup', stopResize); document.body.classList.remove('resizing'); localStorage.setItem('fast_column_layout', JSON.stringify(COLUMN_DEFS)); }
+        function renderColMenu() { let html = ''; COLUMN_DEFS.forEach((def, i) => html += `<div class="col-item" data-id="${i}"><input type="checkbox" ${def.visible ? 'checked' : ''} onchange="toggleVisible(${i})"><span>${def.name}</span></div>`); document.getElementById('col-list').innerHTML = html; }
+        function initSortable() { new Sortable(document.getElementById('col-list'), { animation: 150, onEnd: (evt) => { const moved = COLUMN_DEFS.splice(evt.oldIndex, 1)[0]; COLUMN_DEFS.splice(evt.newIndex, 0, moved); localStorage.setItem('fast_column_layout', JSON.stringify(COLUMN_DEFS)); renderTable(); }}); }
+        function toggleColMenu() { document.getElementById('col-dropdown').classList.toggle('hidden'); }
+        function toggleVisible(i) { COLUMN_DEFS[i].visible = !COLUMN_DEFS[i].visible; localStorage.setItem('fast_column_layout', JSON.stringify(COLUMN_DEFS)); renderTable(); }
+        function handleSort(col) { if(SORT_COL === col) SORT_ASC = !SORT_ASC; else { SORT_COL = col; SORT_ASC = true; } renderTable(); }
+        function instantSearch() { renderTable(); }
+        function updateCounts() { 
+            const sIdx = HEADERS.indexOf("Status");
+            if (sIdx === -1) return;
+            const c = { all: UI_CACHE.length, comp: 0, awat: 0, test: 0 };
+            UI_CACHE.forEach(r => {
+                if (r[sIdx] === 'Completed Jobs') c.comp++;
+                else if (r[sIdx] === 'Project Awaiting Approval') c.awat++;
+                else if (r[sIdx] === 'Testing Only Invoicing') c.test++;
+            });
+            document.getElementById('count-all').innerText = c.all;
+            document.getElementById('count-comp').innerText = c.comp;
+            document.getElementById('count-awat').innerText = c.awat;
+            document.getElementById('count-test').innerText = c.test;
         }
-
-        function closeDrawer() { document.getElementById('drawer').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+        function setView(v, el) { CURRENT_VIEW = v; document.getElementById('view-title').innerText = v; document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); renderTable(); }
         function logout() { localStorage.clear(); location.reload(); }
-        window.onload = () => { if(localStorage.getItem("fast_auth") === "true") init(); };
     </script>
 </body>
 </html>

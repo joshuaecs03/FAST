@@ -11,7 +11,7 @@
         body { font-family: 'Inter', sans-serif; margin: 0; background: var(--ecs-bg); color: var(--ecs-dark); height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
 
-        /* RESTORED ORIGINAL LOGIN BRANDING */
+        /* ORIGINAL LOGIN BRANDING */
         #login-screen { text-align: center; padding-top: 15vh; height: 100vh; background: var(--ecs-bg); }
         .login-brand { font-family: 'Montserrat', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 8px; font-size: 3.5rem; color: #000; margin-bottom: 30px; }
         .login-brand span { color: var(--ecs-orange); }
@@ -19,7 +19,7 @@
         input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 14px; }
         #login-btn { width: 100%; padding: 16px; background: var(--ecs-orange); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; text-transform: uppercase; }
 
-        /* DASHBOARD & SIDEBAR */
+        /* DASHBOARD LAYOUT */
         #dashboard { display: flex; height: 100vh; }
         #sidebar { width: var(--sidebar-width); background: #1F2937; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-header { padding: 25px; border-bottom: 1px solid #374151; }
@@ -30,40 +30,46 @@
         .nav-item.active { background: #111827; color: white; border-left: 4px solid var(--ecs-orange); font-weight: 600; }
         .nav-count { font-size: 10px; background: #374151; color: #9CA3AF; padding: 2px 8px; border-radius: 10px; }
 
-        /* MAIN CONTENT & TIGHT TABLE */
+        /* TIGHT TABLE UI */
         #main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: white; }
-        header { background: white; padding: 0 30px; height: 70px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
-        .controls-area { padding: 12px 30px; border-bottom: 1px solid var(--ecs-border); display: flex; align-items: center; gap: 15px; }
-        #searchBar { flex: 1; padding: 10px 20px; border: 1px solid var(--ecs-border); border-radius: 50px; outline: none; background: #f3f4f6; font-size: 14px; }
-        
-        #col-toggle-btn { background: white; border: 1px solid var(--ecs-border); padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+        header { background: white; padding: 0 30px; height: 60px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
+        .controls-area { padding: 10px 30px; border-bottom: 1px solid var(--ecs-border); display: flex; align-items: center; gap: 12px; }
+        #searchBar { flex: 1; padding: 8px 18px; border: 1px solid var(--ecs-border); border-radius: 50px; outline: none; background: #f3f4f6; font-size: 13px; }
+        #col-toggle-btn { background: white; border: 1px solid var(--ecs-border); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
 
-        /* TABLE LOGIC */
-        .table-wrapper { flex: 1; overflow: auto; margin: 20px; border: 1px solid var(--ecs-border); border-radius: 8px; position: relative; }
+        .table-wrapper { flex: 1; overflow: auto; margin: 15px; border: 1px solid var(--ecs-border); border-radius: 6px; position: relative; }
         table { border-collapse: separate; border-spacing: 0; font-size: 11px; width: auto; table-layout: fixed; }
         th { background: #F9FAFB; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--ecs-border); border-right: 1px solid #eee; text-align: left; padding: 0; color: #6B7280; font-weight: 700; text-transform: uppercase; user-select: none; }
         
-        .th-content { padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; overflow: hidden; }
+        .th-content { padding: 6px 10px; display: flex; align-items: center; justify-content: space-between; overflow: hidden; }
         .resizer { width: 4px; position: absolute; right: 0; top: 0; bottom: 0; cursor: col-resize; background: transparent; }
         .resizer:hover, .resizing { background: var(--ecs-orange); }
 
-        td { padding: 8px 14px; border-bottom: 1px solid #f3f4f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-right: 1px solid #f9f9f9; color: #374151; }
+        td { padding: 5px 10px; border-bottom: 1px solid #f3f4f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-right: 1px solid #f9f9f9; color: #374151; }
         tr:hover td { background-color: #FFF9F5; }
 
-        /* FILTER POPOVER UI */
-        .filter-popover { position: fixed; background: white; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); z-index: 110; min-width: 220px; display: none; }
-        .filter-header { padding: 12px; border-bottom: 1px solid #eee; font-weight: 600; font-size: 12px; display: flex; justify-content: space-between; }
-        .filter-search-container { padding: 8px 12px; }
-        .filter-search-container input { padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; width: 100%; box-sizing: border-box; }
-        .filter-list { max-height: 180px; overflow-y: auto; padding-bottom: 5px; }
-        .filter-item { padding: 5px 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 12px; }
+        /* NARROW & CLEAN FILTER POPOVER */
+        .filter-popover { position: fixed; background: white; border: 1px solid #ccc; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 110; width: 180px; display: none; overflow: hidden; }
+        .filter-header { padding: 8px 10px; border-bottom: 1px solid #eee; font-weight: 600; font-size: 11px; display: flex; justify-content: space-between; align-items: center; color: #4B5563; }
+        .filter-search-container { padding: 6px 10px; }
+        .filter-search-container input { padding: 5px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; width: 100%; box-sizing: border-box; outline: none; }
+        .filter-options-bar { padding: 0 10px 5px 10px; display: flex; gap: 8px; }
+        .filter-options-bar button { font-size: 9px; color: #2563eb; border: none; background: none; cursor: pointer; padding: 0; }
+        .filter-list { max-height: 150px; overflow-y: auto; padding-bottom: 2px; border-top: 1px solid #f3f4f6; }
+        .filter-item { padding: 4px 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 11px; }
         .filter-item:hover { background: #f3f4f6; }
-        .filter-footer { padding: 10px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 8px; }
-        
+        .filter-item input { margin: 0; transform: scale(0.85); }
+        .filter-footer { padding: 8px 10px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 6px; background: #fafafa; }
+        .filter-btn-ok { background: var(--ecs-orange); color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: 600; }
+        .filter-btn-reset { font-size: 10px; border: none; background: none; cursor: pointer; color: #6B7280; }
+
+        .filter-trigger { cursor: pointer; font-size: 9px; color: #9CA3AF; padding: 2px; }
+        th.filter-active .filter-trigger { color: var(--ecs-orange); }
+
         /* COLUMN MODAL */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
-        .modal-card { background: white; width: 380px; max-height: 85vh; border-radius: 12px; display: flex; flex-direction: column; }
-        .col-item { display: flex; align-items: center; padding: 10px 15px; border: 1px solid var(--ecs-border); margin-bottom: 5px; border-radius: 8px; background: white; cursor: grab; }
+        .modal-card { background: white; width: 340px; max-height: 80vh; border-radius: 12px; display: flex; flex-direction: column; }
+        .col-item { display: flex; align-items: center; padding: 8px 12px; border: 1px solid var(--ecs-border); margin-bottom: 4px; border-radius: 6px; background: white; cursor: grab; font-size: 12px; }
         .drag-handle { margin-left: auto; color: #9CA3AF; }
     </style>
 </head>
@@ -91,7 +97,7 @@
         </nav>
 
         <main id="main-content">
-            <header><h2 id="view-title" style="margin:0; font-size:1.1rem; font-weight: 600;">All Jobs</h2><div id="sync-status" style="font-size:11px; color:#9CA3AF;">Syncing...</div></header>
+            <header><h2 id="view-title" style="margin:0; font-size:1rem; font-weight: 600;">All Jobs</h2><div id="sync-status" style="font-size:10px; color:#9CA3AF;">Syncing...</div></header>
             <div class="controls-area">
                 <input type="text" id="searchBar" oninput="renderTable()" placeholder="Quick Search...">
                 <button id="col-toggle-btn" onclick="toggleColModal()"><span>⚙</span> Columns</button>
@@ -102,22 +108,22 @@
 
     <div id="filter-popover" class="filter-popover">
         <div class="filter-header"><span id="filter-title">Filter</span><button onclick="closeFilter()" style="border:none; background:none; cursor:pointer;">&times;</button></div>
-        <div class="filter-search-container"><input type="text" id="filter-search" placeholder="Search values..." oninput="refreshFilterList()"></div>
-        <div style="padding: 0 12px 5px 12px; display: flex; gap: 10px;"><button onclick="toggleAllFilter(true)" style="font-size:10px; color:#2563eb; border:none; background:none; cursor:pointer;">Select all</button><button onclick="toggleAllFilter(false)" style="font-size:10px; color:#2563eb; border:none; background:none; cursor:pointer;">Clear</button></div>
+        <div class="filter-search-container"><input type="text" id="filter-search" placeholder="Search..." oninput="refreshFilterList()"></div>
+        <div class="filter-options-bar"><button onclick="toggleAllFilter(true)">All</button><button onclick="toggleAllFilter(false)">None</button></div>
         <div id="filter-list" class="filter-list"></div>
-        <div class="filter-footer"><button onclick="clearFilter()" style="font-size:11px; border:none; background:none; cursor:pointer; color:var(--ecs-orange);">Reset</button><button onclick="applyFilter()" style="background:var(--ecs-orange); color:white; border:none; padding:5px 12px; border-radius:4px; font-size:11px; cursor:pointer;">OK</button></div>
+        <div class="filter-footer"><button class="filter-btn-reset" onclick="clearFilter()">Reset</button><button class="filter-btn-ok" onclick="applyFilter()">OK</button></div>
     </div>
 
     <div id="col-modal" class="modal-overlay hidden">
         <div class="modal-card">
-            <div class="modal-header" style="padding:20px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:600;">Column Preferences</span>
-                <label style="font-size:12px; color:var(--ecs-orange); cursor:pointer;"><input type="checkbox" onclick="toggleAllCols(this.checked)"> All</label>
+            <div class="modal-header" style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:600; font-size:14px;">Edit Columns</span>
+                <label style="font-size:11px; color:var(--ecs-orange); cursor:pointer;"><input type="checkbox" onclick="toggleAllCols(this.checked)"> Select All</label>
             </div>
-            <div style="padding:10px 20px;"><input type="text" id="modal-col-search" placeholder="Search columns..." oninput="filterModalCols()" style="margin-bottom:0;"></div>
-            <div class="modal-body" id="col-list-container"></div>
-            <div style="padding:20px; border-top:1px solid #eee; display:flex; justify-content:flex-end;">
-                <button onclick="saveColumnConfig()" style="background:var(--ecs-orange); color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:700; cursor:pointer;">Apply Changes</button>
+            <div style="padding:10px 15px;"><input type="text" id="modal-col-search" placeholder="Search..." oninput="filterModalCols()" style="margin-bottom:0; font-size:12px; padding:8px;"></div>
+            <div class="modal-body" id="col-list-container" style="padding:0 15px 15px 15px; overflow-y:auto; flex:1;"></div>
+            <div style="padding:15px; border-top:1px solid #eee; display:flex; justify-content:flex-end;">
+                <button onclick="saveColumnConfig()" style="background:var(--ecs-orange); color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px;">Apply Changes</button>
             </div>
         </div>
     </div>
@@ -136,13 +142,13 @@
         async function handleLogin() {
             const u = document.getElementById('u').value.trim(), p = document.getElementById('p').value.trim();
             if(!u || !p) return;
-            document.getElementById('login-btn').innerText = "Authenticating...";
+            document.getElementById('login-btn').innerText = "...";
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
                 const data = await res.json();
                 if(data.result === "success") { localStorage.setItem("fast_active", "true"); showDashboard(); } 
                 else { alert(data.reason); document.getElementById('login-btn').innerText = "Sign In"; }
-            } catch (e) { alert("Connection error."); }
+            } catch (e) { alert("Error."); }
         }
 
         function showDashboard() {
@@ -174,7 +180,7 @@
                         localStorage.setItem('fast_hash_cache', JSON.stringify(ROW_HASHES));
                         renderTable();
                     }
-                    document.getElementById('sync-status').innerText = "✓ " + UI_CACHE.length + " Jobs";
+                    document.getElementById('sync-status').innerText = "✓ " + UI_CACHE.length;
                 }
             } catch (e) {}
         }
@@ -195,8 +201,9 @@
 
             let html = `<table><thead><tr>`;
             ACTIVE_COLS.forEach(c => {
-                const width = COL_WIDTHS[c] || 160;
-                html += `<th style="width:${width}px;" data-col="${c}">
+                const width = COL_WIDTHS[c] || 150;
+                const filterClass = ACTIVE_FILTERS[c] ? 'filter-active' : '';
+                html += `<th style="width:${width}px;" data-col="${c}" class="${filterClass}">
                     <div class="th-content"><span>${c}</span><span class="filter-trigger" onclick="openFilter(event, '${c}')">▼</span></div>
                     <div class="resizer"></div>
                 </th>`;
@@ -242,7 +249,9 @@
         function openFilter(e, col) {
             e.stopPropagation(); CURRENT_FILTER_COL = col;
             const pop = document.getElementById('filter-popover');
-            pop.style.display = 'block'; pop.style.top = (e.clientY + 5) + 'px'; pop.style.left = (e.clientX - 100) + 'px';
+            pop.style.display = 'block'; 
+            pop.style.top = (e.clientY + 8) + 'px'; 
+            pop.style.left = (e.clientX - 120) + 'px';
             document.getElementById('filter-search').value = '';
             refreshFilterList();
         }
@@ -277,7 +286,7 @@
             container.innerHTML = '';
             order.forEach(c => {
                 const div = document.createElement('div'); div.className = 'col-item'; div.dataset.id = c;
-                div.innerHTML = `<input type="checkbox" class="col-check" ${ACTIVE_COLS.includes(c)?'checked':''}> <span style="font-size:13px">${c}</span> <span class="drag-handle">⠿</span>`;
+                div.innerHTML = `<input type="checkbox" class="col-check" ${ACTIVE_COLS.includes(c)?'checked':''}> <span>${c}</span> <span class="drag-handle">⠿</span>`;
                 container.appendChild(div);
             });
             new Sortable(container, { animation: 150, handle: '.drag-handle' });

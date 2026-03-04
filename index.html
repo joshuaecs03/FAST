@@ -26,7 +26,7 @@
         .sidebar-logo-small { font-family: 'Montserrat', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; font-size: 1.2rem; }
         .sidebar-logo-small span { color: var(--ecs-orange); }
         .nav-label { font-size: 10px; color: #6B7280; padding: 25px 25px 5px 25px; text-transform: uppercase; font-weight: 600; }
-        .nav-item { padding: 14px 25px; cursor: pointer; font-size: 13px; color: #9CA3AF; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid transparent; transition: 0.2s; }
+        .nav-item { padding: 12px 25px; cursor: pointer; font-size: 13px; color: #9CA3AF; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid transparent; transition: 0.2s; }
         .nav-item.active { background: #111827; color: white; border-left: 4px solid var(--ecs-orange); font-weight: 600; }
         .nav-count { font-size: 10px; background: #374151; color: #9CA3AF; padding: 2px 8px; border-radius: 10px; }
 
@@ -36,6 +36,24 @@
         .controls-area { padding: 12px 30px; border-bottom: 1px solid var(--ecs-border); display: flex; align-items: center; gap: 15px; }
         #searchBar { flex: 1; padding: 10px 20px; border: 1px solid var(--ecs-border); border-radius: 50px; outline: none; background: #f3f4f6; font-size: 14px; }
         
+        /* Column Menu UI */
+        #col-toggle-btn { background: white; border: 1px solid var(--ecs-border); padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+        #col-toggle-btn:hover { background: #f9fafb; border-color: #d1d5db; }
+        
+        /* Modal Overlay */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .modal-card { background: white; width: 380px; max-height: 80vh; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .modal-header { padding: 20px; border-bottom: 1px solid var(--ecs-border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 15px 20px; overflow-y: auto; }
+        .modal-footer { padding: 15px 20px; border-top: 1px solid var(--ecs-border); display: flex; justify-content: flex-end; }
+        
+        /* Draggable List Items */
+        .col-item { display: flex; align-items: center; padding: 10px 12px; background: white; border: 1px solid var(--ecs-border); margin-bottom: 6px; border-radius: 8px; cursor: grab; user-select: none; }
+        .col-item:active { cursor: grabbing; }
+        .col-item input { width: auto; margin: 0 12px 0 0; cursor: pointer; }
+        .drag-handle { margin-left: auto; color: #9CA3AF; font-size: 18px; }
+        .sortable-ghost { opacity: 0.4; background: #f3f4f6; }
+
         /* Table Layout */
         .table-wrapper { flex: 1; overflow: auto; margin: 20px; border: 1px solid var(--ecs-border); border-radius: 8px; }
         table { border-collapse: separate; border-spacing: 0; font-size: 11px; width: max-content; min-width: 100%; table-layout: fixed; }
@@ -70,96 +88,165 @@
         <main id="main-content">
             <header><h2 id="view-title" style="margin:0; font-size:1.1rem; font-weight: 600;">All Jobs</h2><div id="sync-status" style="font-size:11px; color:#9CA3AF;">Syncing...</div></header>
             <div class="controls-area">
-                <input type="text" id="searchBar" oninput="renderTable()" placeholder="Search through all 150+ columns instantly...">
+                <input type="text" id="searchBar" oninput="renderTable()" placeholder="Search data...">
+                <button id="col-toggle-btn" onclick="toggleColModal()">
+                    <span style="font-size:16px;">⚙</span> Columns
+                </button>
             </div>
             <div class="table-wrapper" id="table-output"></div>
         </main>
     </div>
 
+    <div id="col-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div style="font-weight: 600;">Column Preferences</div>
+                <div style="display:flex; align-items: center; gap: 12px;">
+                    <label style="font-size:12px; cursor:pointer; color: var(--ecs-orange); font-weight: 600;">
+                        <input type="checkbox" id="master-col-check" onclick="toggleAllCols(this.checked)"> All
+                    </label>
+                    <button onclick="toggleColModal()" style="background:none; border:none; font-size:22px; cursor:pointer; color:#9CA3AF;">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body" id="col-list-container">
+                </div>
+            <div class="modal-footer">
+                <button onclick="saveColumnConfig()" style="background: var(--ecs-orange); color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:600;">Apply & Save</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // REPLACE WITH YOUR LATEST DEPLOYMENT URL
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw03qwvQXRxh1fzuiGTrngVraBGETG-OVFS81dww9Mboe21Ddk3htTGqDJy3xLeHvMpbQ/exec";
         
         let UI_CACHE = JSON.parse(localStorage.getItem('fast_data_cache') || "[]");
         let ROW_HASHES = JSON.parse(localStorage.getItem('fast_hash_cache') || "{}");
         let HEADERS = JSON.parse(localStorage.getItem('fast_headers_cache') || "[]");
         let CURRENT_VIEW = 'All Jobs';
-
-        // Columns shown by default in the table
+        
+        // Load Column Preference from LocalStorage or use defaults
         const DEFAULT_COLS = ["File Number", "File Name", "Status", "Customer Name", "Insurance Company", "Total Invoice"];
+        let ACTIVE_COLS = JSON.parse(localStorage.getItem('fast_active_cols')) || [...DEFAULT_COLS];
 
         window.onload = () => { if (localStorage.getItem("fast_active") === "true") showDashboard(); };
 
         async function handleLogin() {
             const u = document.getElementById('u').value.trim(), p = document.getElementById('p').value.trim();
             if(!u || !p) return;
-            const btn = document.getElementById('login-btn');
-            btn.innerText = "INITIALIZING CACHE...";
+            document.getElementById('login-btn').innerText = "Authenticating...";
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`, { method: 'GET', redirect: 'follow' });
                 const data = await res.json();
-                if(data.result === "success") { 
-                    localStorage.setItem("fast_active", "true"); 
-                    showDashboard(); 
-                } else { 
-                    alert(data.reason || "Denied"); 
-                    btn.innerText = "Sign In";
-                }
-            } catch (e) { alert("Server Error. Check Deployment."); btn.innerText = "Sign In"; }
+                if(data.result === "success") { localStorage.setItem("fast_active", "true"); showDashboard(); } 
+                else { alert(data.reason || "Denied"); document.getElementById('login-btn').innerText = "Sign In"; }
+            } catch (e) { alert("Server connection error."); }
         }
 
         function showDashboard() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
-            // If we have cached data, show it immediately
             if(UI_CACHE.length > 0) { renderTable(); updateCounts(); }
-            // Trigger surgical sync to check for updates
             performSurgicalSync();
-            setInterval(performSurgicalSync, 45000); 
+            setInterval(performSurgicalSync, 30000);
         }
 
         async function performSurgicalSync() {
             try {
-                const url = `${SCRIPT_URL}?action=sync_surgical&hashes=${encodeURIComponent(JSON.stringify(ROW_HASHES))}`;
-                const res = await fetch(url, { method: 'GET', redirect: 'follow' });
+                const res = await fetch(`${SCRIPT_URL}?action=sync_surgical&hashes=${encodeURIComponent(JSON.stringify(ROW_HASHES))}`, { method: 'GET', redirect: 'follow' });
                 const json = await res.json();
                 if (json.result === "success") {
                     HEADERS = json.headers;
                     localStorage.setItem('fast_headers_cache', JSON.stringify(HEADERS));
-                    
                     if (json.updates && json.updates.length > 0) {
                         const fIdx = HEADERS.indexOf("File Number");
                         json.updates.forEach(up => {
-                            // Find row in cache by File Number (up.id)
                             const exIdx = UI_CACHE.findIndex(r => String(r[fIdx]) === String(up.id));
                             if(exIdx !== -1) UI_CACHE[exIdx] = up.data; else UI_CACHE.unshift(up.data);
                             ROW_HASHES[up.id] = up.hash;
                         });
                         localStorage.setItem('fast_data_cache', JSON.stringify(UI_CACHE));
                         localStorage.setItem('fast_hash_cache', JSON.stringify(ROW_HASHES));
-                        renderTable(); updateCounts();
+                        renderTable();
+                        updateCounts();
                     }
-                    document.getElementById('sync-status').innerText = "✓ Connected | " + UI_CACHE.length + " Jobs Cached";
+                    document.getElementById('sync-status').innerText = "✓ Connected | " + UI_CACHE.length + " Jobs";
                 }
             } catch (e) { document.getElementById('sync-status').innerText = "⚠ Sync Error"; }
         }
+
+        // --- Column Manager Functions ---
+
+        function toggleColModal() {
+            const modal = document.getElementById('col-modal');
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) initColList();
+        }
+
+        function initColList() {
+            const container = document.getElementById('col-list-container');
+            container.innerHTML = '';
+            
+            // Merge all possible headers with user's ordered preference
+            const allPossible = HEADERS.length > 0 ? [...HEADERS] : [...DEFAULT_COLS];
+            const displayOrder = [...ACTIVE_COLS];
+            allPossible.forEach(h => { if(!displayOrder.includes(h)) displayOrder.push(h); });
+
+            displayOrder.forEach(col => {
+                const div = document.createElement('div');
+                div.className = 'col-item';
+                div.dataset.id = col;
+                const isChecked = ACTIVE_COLS.includes(col) ? 'checked' : '';
+                div.innerHTML = `
+                    <input type="checkbox" class="col-check" ${isChecked}>
+                    <span style="font-size:13px; font-weight:500;">${col}</span>
+                    <span class="drag-handle">⠿</span>
+                `;
+                container.appendChild(div);
+            });
+
+            new Sortable(container, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost'
+            });
+        }
+
+        function toggleAllCols(checked) {
+            document.querySelectorAll('.col-check').forEach(cb => cb.checked = checked);
+        }
+
+        function saveColumnConfig() {
+            const items = document.querySelectorAll('.col-item');
+            const newActive = [];
+            items.forEach(item => {
+                if(item.querySelector('.col-check').checked) newActive.push(item.dataset.id);
+            });
+
+            if(newActive.length === 0) return alert("Select at least one column");
+
+            ACTIVE_COLS = newActive;
+            localStorage.setItem('fast_active_cols', JSON.stringify(ACTIVE_COLS));
+            renderTable();
+            toggleColModal();
+        }
+
+        // --- Core Table Rendering ---
 
         function renderTable() {
             if (!HEADERS.length) return;
             const sIdx = HEADERS.indexOf("Status");
             const q = document.getElementById("searchBar").value.toUpperCase();
-            
-            // Filter local array based on sidebar view and search bar
             let filtered = UI_CACHE.filter(r => (CURRENT_VIEW === 'All Jobs' || String(r[sIdx]) === CURRENT_VIEW) && r.join(" ").toUpperCase().includes(q));
 
             let html = `<table><thead><tr>`;
-            DEFAULT_COLS.forEach(c => html += `<th style="width:160px">${c}</th>`);
+            ACTIVE_COLS.forEach(c => html += `<th>${c}</th>`);
             html += `</tr></thead><tbody>`;
+            
             filtered.forEach(r => {
                 html += `<tr>`;
-                DEFAULT_COLS.forEach(c => {
-                    const cellVal = r[HEADERS.indexOf(c)] || '';
-                    html += `<td>${cellVal}</td>`;
+                ACTIVE_COLS.forEach(c => {
+                    const idx = HEADERS.indexOf(c);
+                    html += `<td>${idx !== -1 ? (r[idx] || '') : ''}</td>`;
                 });
                 html += `</tr>`;
             });
@@ -190,6 +277,7 @@
             el.classList.add('active');
             renderTable(); 
         }
+        
         function logout() { localStorage.clear(); location.reload(); }
     </script>
 </body>

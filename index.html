@@ -30,7 +30,7 @@
         .nav-item.active { background: #111827; color: white; border-left: 4px solid var(--ecs-orange); font-weight: 600; }
         .nav-count { font-size: 10px; background: #374151; color: #9CA3AF; padding: 2px 8px; border-radius: 10px; }
 
-        /* TIGHT UNIFORM TABLE */
+        /* TIGHT TABLE UI */
         #main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: white; }
         header { background: white; padding: 0 30px; height: 60px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
         .controls-area { padding: 10px 30px; border-bottom: 1px solid var(--ecs-border); display: flex; align-items: center; gap: 12px; }
@@ -48,19 +48,25 @@
         td { padding: 5px 10px; border-bottom: 1px solid #f3f4f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-right: 1px solid #f9f9f9; color: #374151; }
         tr:hover td { background-color: #FFF9F5; }
 
-        /* NARROW FILTER POPOVER */
-        .filter-popover { position: fixed; background: white; border: 1px solid #ccc; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 110; width: 185px; display: none; overflow: hidden; }
+        /* NARROW & CLEAN FILTER POPOVER */
+        .filter-popover { position: fixed; background: white; border: 1px solid #ccc; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 110; width: 180px; display: none; overflow: hidden; }
         .filter-header { padding: 8px 10px; border-bottom: 1px solid #eee; font-weight: 600; font-size: 11px; display: flex; justify-content: space-between; align-items: center; color: #4B5563; }
         .filter-search-container { padding: 6px 10px; }
         .filter-search-container input { padding: 5px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; width: 100%; box-sizing: border-box; outline: none; }
+        .filter-options-bar { padding: 0 10px 5px 10px; display: flex; gap: 8px; }
+        .filter-options-bar button { font-size: 9px; color: #2563eb; border: none; background: none; cursor: pointer; padding: 0; }
         .filter-list { max-height: 150px; overflow-y: auto; padding-bottom: 2px; border-top: 1px solid #f3f4f6; }
         .filter-item { padding: 4px 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 11px; }
         .filter-item:hover { background: #f3f4f6; }
         .filter-item input { margin: 0; transform: scale(0.85); }
         .filter-footer { padding: 8px 10px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 6px; background: #fafafa; }
         .filter-btn-ok { background: var(--ecs-orange); color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: 600; }
+        .filter-btn-reset { font-size: 10px; border: none; background: none; cursor: pointer; color: #6B7280; }
 
-        /* COLUMN MODAL (UNIFORM ACROSS VIEWS) */
+        .filter-trigger { cursor: pointer; font-size: 9px; color: #9CA3AF; padding: 2px; }
+        th.filter-active .filter-trigger { color: var(--ecs-orange); }
+
+        /* COLUMN MODAL */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
         .modal-card { background: white; width: 340px; max-height: 80vh; border-radius: 12px; display: flex; flex-direction: column; }
         .col-item { display: flex; align-items: center; padding: 8px 12px; border: 1px solid var(--ecs-border); margin-bottom: 4px; border-radius: 6px; background: white; cursor: grab; font-size: 12px; }
@@ -93,8 +99,8 @@
         <main id="main-content">
             <header><h2 id="view-title" style="margin:0; font-size:1rem; font-weight: 600;">All Jobs</h2><div id="sync-status" style="font-size:10px; color:#9CA3AF;">Syncing...</div></header>
             <div class="controls-area">
-                <input type="text" id="searchBar" oninput="renderTable()" placeholder="Quick Search Across All Columns...">
-                <button id="col-toggle-btn" onclick="toggleColModal()"><span>⚙</span> Column Settings</button>
+                <input type="text" id="searchBar" oninput="renderTable()" placeholder="Quick Search...">
+                <button id="col-toggle-btn" onclick="toggleColModal()"><span>⚙</span> Columns</button>
             </div>
             <div class="table-wrapper" id="table-output"></div>
         </main>
@@ -102,22 +108,22 @@
 
     <div id="filter-popover" class="filter-popover">
         <div class="filter-header"><span id="filter-title">Filter</span><button onclick="closeFilter()" style="border:none; background:none; cursor:pointer;">&times;</button></div>
-        <div class="filter-search-container"><input type="text" id="filter-search" placeholder="Search values..." oninput="refreshFilterList()"></div>
-        <div style="padding: 0 10px 5px 10px; display: flex; gap: 8px;"><button onclick="toggleAllFilter(true)" style="font-size:9px; color:#2563eb; border:none; background:none; cursor:pointer;">Select All</button><button onclick="toggleAllFilter(false)" style="font-size:9px; color:#2563eb; border:none; background:none; cursor:pointer;">None</button></div>
+        <div class="filter-search-container"><input type="text" id="filter-search" placeholder="Search..." oninput="refreshFilterList()"></div>
+        <div class="filter-options-bar"><button onclick="toggleAllFilter(true)">All</button><button onclick="toggleAllFilter(false)">None</button></div>
         <div id="filter-list" class="filter-list"></div>
-        <div class="filter-footer"><button onclick="clearFilter()" style="font-size:10px; border:none; background:none; cursor:pointer; color:#6B7280;">Reset</button><button class="filter-btn-ok" onclick="applyFilter()">OK</button></div>
+        <div class="filter-footer"><button class="filter-btn-reset" onclick="clearFilter()">Reset</button><button class="filter-btn-ok" onclick="applyFilter()">OK</button></div>
     </div>
 
     <div id="col-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <div class="modal-header" style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:600; font-size:14px;">Global Column Visibility</span>
+                <span style="font-weight:600; font-size:14px;">Edit Columns</span>
                 <label style="font-size:11px; color:var(--ecs-orange); cursor:pointer;"><input type="checkbox" onclick="toggleAllCols(this.checked)"> Select All</label>
             </div>
-            <div style="padding:10px 15px;"><input type="text" id="modal-col-search" placeholder="Search columns..." oninput="filterModalCols()" style="margin-bottom:0; font-size:12px; padding:8px;"></div>
+            <div style="padding:10px 15px;"><input type="text" id="modal-col-search" placeholder="Search..." oninput="filterModalCols()" style="margin-bottom:0; font-size:12px; padding:8px;"></div>
             <div class="modal-body" id="col-list-container" style="padding:0 15px 15px 15px; overflow-y:auto; flex:1;"></div>
             <div style="padding:15px; border-top:1px solid #eee; display:flex; justify-content:flex-end;">
-                <button onclick="saveColumnConfig()" style="background:var(--ecs-orange); color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px;">Apply Globally</button>
+                <button onclick="saveColumnConfig()" style="background:var(--ecs-orange); color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px;">Apply Changes</button>
             </div>
         </div>
     </div>
@@ -245,7 +251,7 @@
             const pop = document.getElementById('filter-popover');
             pop.style.display = 'block'; 
             pop.style.top = (e.clientY + 8) + 'px'; 
-            pop.style.left = (e.clientX - 100) + 'px';
+            pop.style.left = (e.clientX - 120) + 'px';
             document.getElementById('filter-search').value = '';
             refreshFilterList();
         }
@@ -268,7 +274,7 @@
         }
         function clearFilter() { delete ACTIVE_FILTERS[CURRENT_FILTER_COL]; closeFilter(); renderTable(); }
 
-        // --- Uniform Column Manager ---
+        // --- Column Manager ---
         function toggleColModal() {
             const m = document.getElementById('col-modal');
             m.classList.toggle('hidden');

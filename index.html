@@ -2,51 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAST | ECS Asbestos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Montserrat:wght@700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --ecs-orange: #D4631E; --ecs-dark: #111827; --ecs-border: #E5E7EB; --ecs-bg: #F9FAFB; }
-        body { font-family: 'Inter', sans-serif; margin: 0; background: var(--ecs-bg); height: 100vh; overflow: hidden; }
+        :root { --ecs-orange: #D4631E; --ecs-dark: #111827; }
+        body { font-family: 'Inter', sans-serif; margin: 0; background: #F9FAFB; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .login-card { background: white; padding: 50px; border-radius: 12px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 350px; }
+        .btn-login { width: 100%; padding: 14px; background: var(--ecs-orange); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .hidden { display: none !important; }
-        
-        /* LOGIN SCREEN */
-        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; }
-        .login-card { background: white; padding: 50px; border-radius: 12px; width: 360px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .btn-login { width: 100%; padding: 14px; background: var(--ecs-orange); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; }
-
-        /* DASHBOARD UI */
-        #dashboard { display: flex; height: 100vh; }
-        #sidebar { width: 280px; background: #1F2937; color: white; display: flex; flex-direction: column; }
-        .sidebar-header { padding: 30px; border-bottom: 1px solid #374151; }
-        .sidebar-logo { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 1.6rem; letter-spacing: 4px; }
-        .sidebar-logo span { color: var(--ecs-orange); }
-
-        #main-content { flex: 1; display: flex; flex-direction: column; background: white; position: relative; }
-        header { padding: 0 20px; height: 70px; display: flex; align-items: center; border-bottom: 1px solid var(--ecs-border); justify-content: space-between; }
-
-        /* DATA TABLE */
-        .table-wrapper { flex: 1; overflow: auto; padding: 10px; }
-        table { width: max-content; min-width: 100%; border-collapse: separate; font-size: 11px; table-layout: fixed; } 
-        th { background: #F9FAFB; padding: 12px 15px; position: sticky; top: 0; text-align: left; border-bottom: 2px solid var(--ecs-border); z-index: 10; border-right: 1px solid #eee; }
-        td { padding: 12px 15px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-right: 1px solid #f9f9f9; }
-        tr:hover td { background-color: #FFF9F5; cursor: pointer; }
-
-        /* ZENDESK DRAWER */
-        #audit-drawer { position: fixed; right: -500px; top: 0; width: 450px; height: 100vh; background: white; border-left: 1px solid var(--ecs-border); transition: 0.3s ease; z-index: 2000; box-shadow: -10px 0 30px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
-        #audit-drawer.open { right: 0; }
-        .drawer-header { padding: 20px; border-bottom: 1px solid var(--ecs-border); display: flex; justify-content: space-between; align-items: center; }
-        
-        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+        #dashboard { position: absolute; top:0; left:0; width: 100%; height: 100%; background: white; z-index: 100; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-card">
-            <div class="sidebar-logo" style="color:black; margin-bottom:20px;">F<span>A</span>ST</div>
-            <p style="color: #6B7280; margin-bottom: 30px;">Authorized Access for @ecs-asbestos.com</p>
+            <h1 style="letter-spacing: 4px; margin-bottom: 10px;">F<span style="color:var(--ecs-orange)">A</span>ST</h1>
+            <p style="color: #6B7280; margin-bottom: 30px; font-size: 14px;">Domain Access: @ecs-asbestos.com</p>
             <button class="btn-login" onclick="startAuth()">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_\"G\"_Logo.svg" width="18" alt="">
                 Sign in with Google
@@ -54,126 +27,44 @@
         </div>
     </div>
 
-    <div id="overlay" onclick="closeDrawer()"></div>
-
-    <div id="audit-drawer">
-        <div class="drawer-header">
-            <div>
-                <h3 id="drawer-title" style="margin:0;">Job Details</h3>
-                <span id="drawer-subtitle" style="font-size:12px; color:#9CA3AF;">File Number</span>
-            </div>
-            <button onclick="closeDrawer()" style="border:none; background:none; cursor:pointer; font-size:20px;">✕</button>
-        </div>
-        <div id="audit-content" style="flex:1; padding:20px; overflow-y:auto; background: #F9FAFB;"></div>
-    </div>
-
     <div id="dashboard" class="hidden">
-        <nav id="sidebar">
-            <div class="sidebar-header"><div class="sidebar-logo">F<span>A</span>ST</div></div>
-            <div style="padding:20px; margin-top:auto;">
-                <p id="user-tag" style="font-size:10px; color:#9CA3AF; margin-bottom:10px;"></p>
-                <button onclick="logout()" style="width:100%; padding:10px; background:none; color:#9CA3AF; border:1px solid #4B5563; border-radius:6px; cursor:pointer;">Logout</button>
+        <div style="padding: 40px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>FAST Management Portal</h2>
+                <button onclick="logout()" style="background:none; border:1px solid #ddd; padding:8px 15px; border-radius:5px; cursor:pointer;">Logout</button>
             </div>
-        </nav>
-        <main id="main-content">
-            <header>
-                <h2 id="view-title" style="margin:0;">All Jobs</h2>
-                <div id="sync-indicator" style="font-size:10px; color:#9CA3AF;">Syncing...</div>
-            </header>
-            <div class="table-wrapper"><div id="table-output"></div></div>
-        </main>
+            <p id="user-info" style="color:#6B7280;"></p>
+            <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+            <div id="data-table">Loading Job Data...</div>
+        </div>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/a/macros/ecs-asbestos.com/s/AKfycbztvM5BG9pSbVM8VORJ40mwnYX8fhFUsvmvhxzCtp8sJberl_hi4fgPww2t0xB23KfugQ/exec";
-        
-        function startAuth() { 
-            const authUrl = `${SCRIPT_URL}?action=user_login`;
-            window.open(authUrl, "Auth", "width=500,height=600"); 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzR6Wn5a7i7Ylx7k-QAmnqDokoigTuXj7pvNLKnUqCRMtjZG079HUX14LGNcDHkwgi0dA/exec";
+
+        function startAuth() {
+            // Open login popup
+            window.open(`${SCRIPT_URL}?action=user_login`, "Auth", "width=500,height=600");
         }
 
         window.addEventListener("message", (event) => {
             if (event.data && event.data.result === "success") {
-                localStorage.setItem("fast_active", "true");
-                localStorage.setItem("fast_email", event.data.email);
-                init();
-            } else if (event.data && event.data.result === "denied") { 
-                alert(event.data.message); 
+                localStorage.setItem("fast_auth", "true");
+                localStorage.setItem("fast_user", event.data.email);
+                showDashboard();
+            } else if (event.data && event.data.result === "denied") {
+                alert("ACCESS DENIED\n\nThe system detected: " + event.data.email + "\n\nOnly @ecs-asbestos.com accounts are permitted.");
             }
         }, false);
 
-        let UI_CACHE = [], ROW_HASHES = {}, HEADERS = [];
-
-        window.onload = () => { if (localStorage.getItem("fast_active") === "true") init(); };
-
-        async function init() {
+        function showDashboard() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('user-tag').innerText = "Logged in: " + (localStorage.getItem("fast_email") || "Verified");
-            await performSurgicalSync();
-            setInterval(performSurgicalSync, 20000);
+            document.getElementById('user-info').innerText = "Verified Session: " + localStorage.getItem("fast_user");
         }
 
-        async function performSurgicalSync() {
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=sync_surgical&hashes=${encodeURIComponent(JSON.stringify(ROW_HASHES))}`);
-                const json = await res.json();
-                
-                if (json.result === "success" && json.updates) {
-                    HEADERS = json.headers;
-                    const fIdx = HEADERS.indexOf("File Number");
-                    json.updates.forEach(up => {
-                        const fNum = up.data[fIdx].toString();
-                        const exIdx = UI_CACHE.findIndex(r => r[fIdx].toString() === fNum);
-                        if(exIdx !== -1) UI_CACHE[exIdx] = up.data; else UI_CACHE.unshift(up.data);
-                        ROW_HASHES[fNum] = up.hash;
-                    });
-                    renderTable();
-                    document.getElementById('sync-indicator').innerText = "Last sync: " + new Date().toLocaleTimeString();
-                }
-            } catch(e) { console.error("Sync Error:", e); }
-        }
-
-        function renderTable() {
-            const fIdx = HEADERS.indexOf("File Number"), nIdx = HEADERS.indexOf("File Name");
-            if (fIdx === -1) {
-                document.getElementById('table-output').innerHTML = "<p style='padding:20px; color:red;'>Error: 'File Number' column not found in sheet.</p>";
-                return;
-            }
-            let html = `<table><thead><tr>`;
-            HEADERS.forEach(h => html += `<th>${h}</th>`);
-            html += `</tr></thead><tbody>`;
-            UI_CACHE.forEach(r => {
-                html += `<tr onclick="openDrawer('${r[fIdx]}', '${r[nIdx]}')">`;
-                r.forEach(cell => html += `<td>${cell || ''}</td>`);
-                html += `</tr>`;
-            });
-            document.getElementById('table-output').innerHTML = html + `</tbody></table>`;
-        }
-
-        async function openDrawer(fileNum, fileName) {
-            document.getElementById('audit-drawer').classList.add('open');
-            document.getElementById('overlay').classList.add('open');
-            document.getElementById('drawer-title').innerText = fileName || "Job Details";
-            document.getElementById('drawer-subtitle').innerText = "File #: " + fileNum;
-            
-            const content = document.getElementById('audit-content');
-            content.innerHTML = "Loading history...";
-            
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=get_audit_logs&fileNum=${fileNum}`);
-                const data = await res.json();
-                content.innerHTML = data.logs.map(l => `
-                    <div style="margin-bottom:15px; padding:10px; background:white; border-radius:8px; border:1px solid #eee;">
-                        <div style="font-size:10px; color:#9CA3AF; margin-bottom:5px;">${l.Timestamp ? new Date(l.Timestamp).toLocaleString() : ''}</div>
-                        <strong>${l.Type || 'Note'}</strong><br>${l.Body || ''}
-                    </div>
-                `).join('') || "No logs found for this job.";
-            } catch(e) { content.innerHTML = "Error loading history."; }
-        }
-
-        function closeDrawer() { document.getElementById('audit-drawer').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); }
         function logout() { localStorage.clear(); location.reload(); }
+        window.onload = () => { if(localStorage.getItem("fast_auth") === "true") showDashboard(); };
     </script>
 </body>
 </html>

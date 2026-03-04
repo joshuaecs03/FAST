@@ -56,9 +56,9 @@
         <div style="text-align:center; padding-top:15vh;">
             <div class="sidebar-logo" style="color:black; font-size:3rem;">F<span>A</span>ST</div>
             <div style="width:320px; margin:40px auto; background:white; padding:40px; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.05);">
-                <input type="text" id="u" placeholder="Email" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius:8px; width:100%; box-sizing:border-box;">
-                <input type="password" id="p" placeholder="Password" style="width:100%; padding:12px; margin-bottom:25px; border:1px solid #ddd; border-radius:8px; width:100%; box-sizing:border-box;">
-                <button onclick="handleLogin()" style="width:100%; padding:14px; background:var(--ecs-orange); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; width:100%;">Sign In</button>
+                <input type="text" id="u" placeholder="Email" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
+                <input type="password" id="p" placeholder="Password" style="width:100%; padding:12px; margin-bottom:25px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
+                <button onclick="handleLogin()" id="login-btn" style="width:100%; padding:14px; background:var(--ecs-orange); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600;">Sign In</button>
             </div>
         </div>
     </div>
@@ -87,7 +87,6 @@
     </div>
 
     <script>
-        // UPDATED SCRIPT URL
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbys1p_6uN9upT77dculUMzENw3FCiB4jBiog206StyorhrC7fPrS63mLQvvthhmXIepMA/exec";
         
         let UI_CACHE = JSON.parse(localStorage.getItem('fast_data_cache') || "[]");
@@ -111,16 +110,27 @@
 
         async function handleLogin() {
             const u = document.getElementById('u').value, p = document.getElementById('p').value;
+            const btn = document.getElementById('login-btn');
+            btn.innerText = "Authenticating...";
+            
+            const url = `${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`;
+            
             try {
-                const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
+                const res = await fetch(url, { method: 'GET', mode: 'cors', redirect: 'follow' });
                 const data = await res.json();
+                
                 if(data.result === "success") { 
                     localStorage.setItem("fast_active", "true"); 
                     init(); 
                 } else {
-                    alert("Access Denied");
+                    alert("Denied: Invalid credentials.");
+                    btn.innerText = "Sign In";
                 }
-            } catch (e) { alert("Login Error: Please check your connection."); }
+            } catch (e) { 
+                console.error(e);
+                alert("Connection Error: Is the script deployed as 'Anyone'?"); 
+                btn.innerText = "Sign In";
+            }
         }
 
         async function init() {
@@ -132,8 +142,9 @@
         }
 
         async function performSurgicalSync() {
+            const url = `${SCRIPT_URL}?action=sync_surgical&hashes=${encodeURIComponent(JSON.stringify(ROW_HASHES))}`;
             try {
-                const res = await fetch(`${SCRIPT_URL}?action=sync_surgical&hashes=${encodeURIComponent(JSON.stringify(ROW_HASHES))}`);
+                const res = await fetch(url, { method: 'GET', mode: 'cors', redirect: 'follow' });
                 const json = await res.json();
                 
                 if (json.result === "success") {
@@ -158,7 +169,7 @@
                         updateCounts();
                     }
                 }
-                document.getElementById('sync-status').innerText = UI_CACHE.length > 0 ? "✓ Live: " + new Date().toLocaleTimeString() : "Syncing...";
+                document.getElementById('sync-status').innerText = "✓ Live: " + new Date().toLocaleTimeString();
             } catch (e) { document.getElementById('sync-status').innerText = "⚠ Reconnecting..."; }
         }
 
@@ -198,54 +209,15 @@
         }
 
         let startX, startWidth, colNameForResize;
-        function startResize(e, name) { 
-            e.stopPropagation(); 
-            colNameForResize = name; 
-            startX = e.pageX; 
-            const def = COLUMN_DEFS.find(d => d.name === name); 
-            startWidth = def.width; 
-            document.addEventListener('mousemove', handleMouseMove); 
-            document.addEventListener('mouseup', stopResize); 
-            document.body.classList.add('resizing'); 
-        }
-
-        function handleMouseMove(e) { 
-            const diff = e.pageX - startX; 
-            const def = COLUMN_DEFS.find(d => d.name === colNameForResize); 
-            def.width = Math.max(50, startWidth + diff); 
-            renderTable(); 
-        }
-
-        function stopResize() { 
-            document.removeEventListener('mousemove', handleMouseMove); 
-            document.removeEventListener('mouseup', stopResize); 
-            document.body.classList.remove('resizing'); 
-            localStorage.setItem('fast_column_layout', JSON.stringify(COLUMN_DEFS)); 
-        }
-
-        function renderColMenu() { 
-            let html = ''; 
-            COLUMN_DEFS.forEach((def, i) => html += `<div class="col-item" data-id="${i}"><input type="checkbox" ${def.visible ? 'checked' : ''} onchange="toggleVisible(${i})"><span>${def.name}</span></div>`); 
-            document.getElementById('col-list').innerHTML = html; 
-        }
-
-        function initSortable() { 
-            new Sortable(document.getElementById('col-list'), { 
-                animation: 150, 
-                onEnd: (evt) => { 
-                    const moved = COLUMN_DEFS.splice(evt.oldIndex, 1)[0]; 
-                    COLUMN_DEFS.splice(evt.newIndex, 0, moved); 
-                    localStorage.setItem('fast_column_layout', JSON.stringify(COLUMN_DEFS)); 
-                    renderTable(); 
-                }
-            }); 
-        }
-
+        function startResize(e, name) { e.stopPropagation(); colNameForResize = name; startX = e.pageX; const def = COLUMN_DEFS.find(d => d.name === name); startWidth = def.width; document.addEventListener('mousemove', handleMouseMove); document.addEventListener('mouseup', stopResize); document.body.classList.add('resizing'); }
+        function handleMouseMove(e) { const diff = e.pageX - startX; const def = COLUMN_DEFS.find(d => d.name === colNameForResize); def.width = Math.max(50, startWidth + diff); renderTable(); }
+        function stopResize() { document.removeEventListener('mousemove', handleMouseMove); document.removeEventListener('mouseup', stopResize); document.body.classList.remove('resizing'); localStorage.setItem('fast_column_layout', JSON.stringify(COLUMN_DEFS)); }
+        function renderColMenu() { let html = ''; COLUMN_DEFS.forEach((def, i) => html += `<div class="col-item" data-id="${i}"><input type="checkbox" ${def.visible ? 'checked' : ''} onchange="toggleVisible(${i})"><span>${def.name}</span></div>`); document.getElementById('col-list').innerHTML = html; }
+        function initSortable() { new Sortable(document.getElementById('col-list'), { animation: 150, onEnd: (evt) => { const moved = COLUMN_DEFS.splice(evt.oldIndex, 1)[0]; COLUMN_DEFS.splice(evt.newIndex, 0, moved); localStorage.setItem('fast_column_layout', JSON.stringify(COLUMN_DEFS)); renderTable(); }}); }
         function toggleColMenu() { document.getElementById('col-dropdown').classList.toggle('hidden'); }
         function toggleVisible(i) { COLUMN_DEFS[i].visible = !COLUMN_DEFS[i].visible; localStorage.setItem('fast_column_layout', JSON.stringify(COLUMN_DEFS)); renderTable(); }
         function handleSort(col) { if(SORT_COL === col) SORT_ASC = !SORT_ASC; else { SORT_COL = col; SORT_ASC = true; } renderTable(); }
         function instantSearch() { renderTable(); }
-
         function updateCounts() { 
             const sIdx = HEADERS.indexOf("Status");
             if (sIdx === -1) return;
@@ -255,20 +227,9 @@
                 else if (r[sIdx] === 'Project Awaiting Approval') c.awat++;
                 else if (r[sIdx] === 'Testing Only Invoicing') c.test++;
             });
-            document.getElementById('count-all').innerText = c.all;
-            document.getElementById('count-comp').innerText = c.comp;
-            document.getElementById('count-awat').innerText = c.awat;
-            document.getElementById('count-test').innerText = c.test;
+            document.getElementById('count-all').innerText = c.all; document.getElementById('count-comp').innerText = c.comp; document.getElementById('count-awat').innerText = c.awat; document.getElementById('count-test').innerText = c.test;
         }
-
-        function setView(v, el) { 
-            CURRENT_VIEW = v; 
-            document.getElementById('view-title').innerText = v; 
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
-            el.classList.add('active'); 
-            renderTable(); 
-        }
-
+        function setView(v, el) { CURRENT_VIEW = v; document.getElementById('view-title').innerText = v; document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); renderTable(); }
         function logout() { localStorage.clear(); location.reload(); }
     </script>
 </body>

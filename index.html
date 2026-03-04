@@ -18,7 +18,7 @@
         .sidebar-logo span { color: var(--ecs-orange); }
 
         .nav-label { font-size: 10px; color: #6B7280; padding: 25px 30px 5px 30px; text-transform: uppercase; font-weight: 600; }
-        .nav-item { padding: 16px 30px; cursor: pointer; font-size: 13px; color: #9CA3AF; transition: 0.2s; border-left: 4px solid transparent; display: flex; justify-content: space-between; }
+        .nav-item { padding: 16px 30px; cursor: pointer; font-size: 13px; color: #9CA3AF; transition: 0.2s; border-left: 4px solid transparent; display: flex; align-items: center; justify-content: space-between; }
         .nav-item.active { background: #111827; color: white; border-left: 4px solid var(--ecs-orange); font-weight: 600; }
         .nav-count { font-size: 10px; background: #374151; color: #9CA3AF; padding: 2px 8px; border-radius: 10px; }
 
@@ -31,16 +31,15 @@
         .col-manager { position: relative; }
         #col-btn { background: white; border: 1px solid var(--ecs-border); padding: 10px 20px; border-radius: 50px; cursor: pointer; font-size: 12px; font-weight: 600; }
         
-        .col-dropdown { position: absolute; right: 0; top: 120%; background: white; border: 1px solid var(--ecs-border); border-radius: 12px; box-shadow: 0 15px 30px rgba(0,0,0,0.1); z-index: 100; width: 260px; padding: 10px; max-height: 400px; overflow-y: auto; }
+        .col-dropdown { position: absolute; right: 0; top: 120%; background: white; border: 1px solid var(--ecs-border); border-radius: 12px; box-shadow: 0 15px 30px rgba(0,0,0,0.1); z-index: 100; width: 280px; padding: 10px; max-height: 450px; overflow-y: auto; }
         .col-item { display: flex; align-items: center; gap: 12px; padding: 8px; font-size: 12px; cursor: move; border-radius: 6px; }
         .col-item:hover { background: #f3f4f6; }
 
         .table-wrapper { flex: 1; overflow: auto; margin: 20px; border: 1px solid var(--ecs-border); border-radius: 8px; }
         table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 11px; }
-        th { background: #F9FAFB; padding: 12px; position: sticky; top: 0; text-align: left; z-index: 10; border-bottom: 2px solid var(--ecs-border); }
-        .header-label { font-size: 10px; color: #6B7280; text-transform: uppercase; font-weight: 700; cursor: pointer; display: block; margin-bottom: 5px; }
-        .col-filter { width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 10px; outline: none; box-sizing: border-box; }
-        td { padding: 12px 16px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; color: #374151; }
+        th { background: #F9FAFB; padding: 16px; position: sticky; top: 0; text-align: left; z-index: 10; border-bottom: 2px solid var(--ecs-border); }
+        .header-label { font-size: 10px; color: #6B7280; text-transform: uppercase; font-weight: 700; cursor: pointer; }
+        td { padding: 14px 16px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; color: #374151; }
         tr:hover td { background-color: #FFF9F5; }
     </style>
 </head>
@@ -68,10 +67,10 @@
             <div style="margin-top:auto; padding:20px; border-top:1px solid #374151;"><button onclick="logout()" style="width:100%; background:none; border:1px solid #4B5563; color:#9CA3AF; padding:10px; cursor:pointer; border-radius:6px;">Logout</button></div>
         </nav>
         <main id="main-content">
-            <header><h2 id="view-title" style="margin:0;">All Jobs</h2><div id="sync-status" style="font-size:11px; color:#9CA3AF;">Initializing...</div></header>
+            <header><h2 id="view-title" style="margin:0;">All Jobs</h2><div id="sync-status" style="font-size:11px; color:#9CA3AF;">Syncing...</div></header>
             
             <div class="controls-area">
-                <input type="text" id="searchBar" oninput="instantSearch()" placeholder="Global Search...">
+                <input type="text" id="searchBar" oninput="instantSearch()" placeholder="Search by name, file #, address, or referral...">
                 <div class="col-manager">
                     <button id="col-btn" onclick="toggleColMenu()">⚙ Columns</button>
                     <div id="col-dropdown" class="col-dropdown hidden">
@@ -90,10 +89,21 @@
         
         let UI_CACHE = [], HEADERS = [], ROW_HASHES = {}, CURRENT_VIEW = 'All Jobs';
         let COLUMN_DEFS = []; 
-        let FILTERS = {}, SORT_COL = null, SORT_ASC = true;
+        let SORT_COL = null, SORT_ASC = true;
 
-        // Your specific default columns
-        const DEFAULT_VISIBLE = ["File Number", "Status", "Client Name", "Claim Number", "Job Address", "Project Manager"];
+        // FIXED: Your new exact default column list
+        const DEFAULT_VISIBLE = [
+            "File Number", 
+            "File Name", 
+            "Claim Number", 
+            "Status", 
+            "Customer Name", 
+            "Loss Address", 
+            "State", 
+            "Insurance Company", 
+            "Referred By", 
+            "Referred By Organization Name"
+        ];
 
         window.onload = () => { if (localStorage.getItem("fast_active") === "true") init(); };
 
@@ -117,10 +127,10 @@
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=sync_surgical&hashes=${encodeURIComponent(JSON.stringify(ROW_HASHES))}`);
                 const json = await res.json();
+                
                 if (json.result === "success" && json.updates.length > 0) {
                     if (HEADERS.length === 0) {
                         HEADERS = json.headers;
-                        // Set columns: Only check the ones in DEFAULT_VISIBLE
                         COLUMN_DEFS = HEADERS.map(h => ({ 
                             name: h, 
                             visible: DEFAULT_VISIBLE.includes(h) 
@@ -138,7 +148,12 @@
                     renderTable();
                     updateCounts();
                 }
-                document.getElementById('sync-status').innerText = "✓ Live: " + new Date().toLocaleTimeString();
+
+                if (UI_CACHE.length > 0) {
+                    document.getElementById('sync-status').innerText = "✓ Live: " + new Date().toLocaleTimeString();
+                } else {
+                    document.getElementById('sync-status').innerText = "Connecting to Sheet...";
+                }
             } catch (e) { document.getElementById('sync-status').innerText = "⚠ Reconnecting..."; }
         }
 
@@ -150,20 +165,14 @@
             let filtered = UI_CACHE.filter(row => {
                 const matchesView = (CURRENT_VIEW === 'All Jobs' || row[statusIdx] === CURRENT_VIEW);
                 const matchesGlobal = row.join(" ").toUpperCase().includes(globalQ);
-                const matchesFilters = visibleDefs.every(def => {
-                    const idx = HEADERS.indexOf(def.name);
-                    const val = (row[idx] || "").toString().toUpperCase();
-                    const filterVal = (FILTERS[def.name] || "").toUpperCase();
-                    return val.includes(filterVal);
-                });
-                return matchesView && matchesGlobal && matchesFilters;
+                return matchesView && matchesGlobal;
             });
 
             if (SORT_COL) {
                 const sIdx = HEADERS.indexOf(SORT_COL);
                 filtered.sort((a,b) => {
-                    let vA = a[sIdx] || '', vB = b[sIdx] || '';
-                    return SORT_ASC ? vA.toString().localeCompare(vB) : vB.toString().localeCompare(vA);
+                    let vA = (a[sIdx] || '').toString(), vB = (b[sIdx] || '').toString();
+                    return SORT_ASC ? vA.localeCompare(vB) : vB.localeCompare(vA);
                 });
             }
 
@@ -171,7 +180,6 @@
             visibleDefs.forEach(def => {
                 html += `<th>
                     <span class="header-label" onclick="handleSort('${def.name}')">${def.name} ${SORT_COL === def.name ? (SORT_ASC ? '▲' : '▼') : ''}</span>
-                    <input type="text" class="col-filter" placeholder="Filter..." value="${FILTERS[def.name] || ''}" oninput="handleFilter('${def.name}', this.value)">
                 </th>`;
             });
             html += `</tr></thead><tbody>`;
@@ -207,7 +215,6 @@
 
         function toggleColMenu() { document.getElementById('col-dropdown').classList.toggle('hidden'); }
         function toggleVisible(i) { COLUMN_DEFS[i].visible = !COLUMN_DEFS[i].visible; renderTable(); }
-        function handleFilter(name, val) { FILTERS[name] = val; renderTable(); }
         function handleSort(col) { if(SORT_COL === col) SORT_ASC = !SORT_ASC; else { SORT_COL = col; SORT_ASC = true; } renderTable(); }
         function instantSearch() { renderTable(); }
         

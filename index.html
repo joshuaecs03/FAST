@@ -9,10 +9,14 @@
         :root { --ecs-orange: #D4631E; --ecs-dark: #1F2937; --border: #E5E7EB; }
         body { font-family: 'Inter', sans-serif; margin: 0; background: #F3F4F6; height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
+        
+        /* LOGIN UI */
         #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; }
         .login-card { background: white; padding: 45px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 340px; text-align: center; }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; outline-color: var(--ecs-orange); }
         .btn-login { width: 100%; padding: 14px; background: var(--ecs-orange); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px; margin-top: 15px; }
+        
+        /* DASHBOARD UI */
         #dashboard { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; display: flex; flex-direction: column; }
         .nav-bar { background: var(--ecs-dark); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
         .table-container { flex: 1; overflow: auto; padding: 25px; }
@@ -38,16 +42,19 @@
     <div id="dashboard" class="hidden">
         <nav class="nav-bar">
             <div style="font-family: Montserrat; font-weight: 700; letter-spacing: 2px;">F<span style="color:var(--ecs-orange)">A</span>ST</div>
-            <button onclick="logout()" style="background:none; border:1px solid white; color:white; padding:5px 12px; border-radius:6px; cursor:pointer;">Logout</button>
+            <div style="display:flex; align-items:center; gap:20px;">
+                <span id="user-display" style="font-size:12px; opacity:0.8;"></span>
+                <button onclick="logout()" style="background:none; border:1px solid white; color:white; padding:5px 12px; border-radius:6px; cursor:pointer;">Logout</button>
+            </div>
         </nav>
         <div class="table-container">
-            <h2 id="user-welcome">Project Data</h2>
-            <div id="table-output">Syncing with Xcelerate...</div>
+            <h2 id="table-title">Xcelerate Project Data</h2>
+            <div id="table-output">Syncing with Google Sheets...</div>
         </div>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxXA1nWUAhBMH0y6OOFb86yjHqhjOSnEt6865PA60hlRN87AW_5vFLJUzRbdCoZ8t4KA/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbys1p_6uN9upT77dculUMzENw3FCiB4jBiog206StyorhrC7fPrS63mLQvvthhmXIepMA/exec";
 
         async function handleLogin() {
             const user = document.getElementById('user').value;
@@ -55,7 +62,7 @@
             const msg = document.getElementById('msg');
             
             if(!user || !pass) { msg.innerText = "Please enter credentials"; return; }
-            msg.innerText = "Authenticating...";
+            msg.innerText = "Connecting...";
             
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=verify_login&user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`);
@@ -66,26 +73,30 @@
                     localStorage.setItem("fast_user", user);
                     loadDashboard();
                 } else {
-                    msg.innerText = "Invalid Login.";
+                    msg.innerText = "Invalid Login Details.";
                 }
             } catch (e) {
-                msg.innerText = "Connection Failed. Check Script Permissions.";
-                console.error(e);
+                msg.innerText = "Connection Failed. Ensure Script is Deployed to 'Anyone'.";
+                console.error("Fetch error:", e);
             }
         }
 
         async function loadDashboard() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('user-welcome').innerText = "Project Data for " + localStorage.getItem('fast_user');
+            document.getElementById('user-display').innerText = "Logged in: " + localStorage.getItem('fast_user');
             
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=sync_data`);
                 const json = await res.json();
                 if(json.result === "success") {
                     renderTable(json.headers, json.rows);
+                } else {
+                    document.getElementById('table-output').innerText = "Sync Error: " + json.message;
                 }
-            } catch(e) { document.getElementById('table-output').innerText = "Sync Error."; }
+            } catch(e) { 
+                document.getElementById('table-output').innerText = "Data Connection Failed.";
+            }
         }
 
         function renderTable(headers, rows) {

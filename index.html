@@ -10,15 +10,13 @@
         body { font-family: 'Inter', sans-serif; margin: 0; background: var(--ecs-bg); color: var(--ecs-dark); height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
         
-        /* Login UI */
         #login-screen { text-align: center; padding-top: 15vh; height: 100vh; background: var(--ecs-bg); }
         .login-card { width: 340px; margin: 40px auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         .sidebar-logo { font-family: 'Montserrat', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 4px; font-size: 2rem; color: black; }
         .sidebar-logo span { color: var(--ecs-orange); }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         button { width: 100%; padding: 14px; background: var(--ecs-orange); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
         
-        /* Dashboard UI */
         #dashboard { display: flex; height: 100vh; }
         #sidebar { width: var(--sidebar-width); background: #1F2937; color: white; display: flex; flex-direction: column; }
         .sidebar-header { padding: 30px; border-bottom: 1px solid #374151; }
@@ -28,7 +26,6 @@
         table { width: max-content; min-width: 100%; border-collapse: collapse; font-size: 11px; }
         th { background: #F9FAFB; padding: 12px; position: sticky; top: 0; text-align: left; border-bottom: 2px solid var(--ecs-border); }
         td { padding: 10px 12px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; }
-        #sync-status { font-size: 11px; color: #9CA3AF; }
     </style>
 </head>
 <body>
@@ -45,37 +42,31 @@
     <div id="dashboard" class="hidden">
         <nav id="sidebar">
             <div class="sidebar-header"><div class="sidebar-logo" style="color:white; font-size:1.5rem;">F<span>A</span>ST</div></div>
-            <div style="padding:20px; color:#9CA3AF; font-size:12px;">Welcome back</div>
             <div style="margin-top:auto; padding:20px;"><button onclick="logout()" style="background:#374151;">Logout</button></div>
         </nav>
         <main id="main-content">
-            <header><h2>All Jobs</h2><div id="sync-status">Initializing...</div></header>
-            <div class="table-wrapper" id="table-output">
-                <p style="padding:20px;">Loading data...</p>
-            </div>
+            <header><h2>All Jobs</h2><div id="sync-status" style="font-size:11px; color:#9CA3AF;">Connected</div></header>
+            <div class="table-wrapper" id="table-output"></div>
         </main>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbys1p_6uN9upT77dculUMzENw3FCiB4jBiog206StyorhrC7fPrS63mLQvvthhmXIepMA/exec";
+        // UPDATED URL
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzdCLIINKC-BF-rdq_wcPak8LsHbtVhiZO2qMVuiGppDS7Cg1_VmhAtPWT_K2tK6r8A8g/exec";
         
         let UI_CACHE = JSON.parse(localStorage.getItem('fast_data_cache') || "[]");
         let ROW_HASHES = JSON.parse(localStorage.getItem('fast_hash_cache') || "{}");
         let HEADERS = JSON.parse(localStorage.getItem('fast_headers_cache') || "[]");
 
-        window.onload = () => {
-            if (localStorage.getItem("fast_active") === "true") {
-                showDashboard();
-            }
-        };
+        window.onload = () => { if (localStorage.getItem("fast_active") === "true") showDashboard(); };
 
         async function handleLogin() {
             const u = document.getElementById('u').value.trim();
             const p = document.getElementById('p').value.trim();
-            const btn = document.getElementById('login-btn');
+            if(!u || !p) return alert("Missing credentials");
             
-            if(!u || !p) return alert("Enter credentials");
-            btn.innerText = "Checking...";
+            const btn = document.getElementById('login-btn');
+            btn.innerText = "Connecting...";
 
             try {
                 const url = `${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`;
@@ -86,11 +77,11 @@
                     localStorage.setItem("fast_active", "true");
                     showDashboard();
                 } else {
-                    alert("Error: " + data.reason);
+                    alert("Denied: " + data.reason);
                     btn.innerText = "Sign In";
                 }
             } catch (e) {
-                alert("Connection error. Check script deployment.");
+                alert("Network error. Verify Web App is deployed as 'Anyone'.");
                 btn.innerText = "Sign In";
             }
         }
@@ -111,8 +102,6 @@
                 
                 if (json.result === "success") {
                     HEADERS = json.headers;
-                    localStorage.setItem('fast_headers_cache', JSON.stringify(HEADERS));
-                    
                     if (json.updates.length > 0) {
                         const fNumIdx = HEADERS.indexOf("File Number");
                         json.updates.forEach(up => {
@@ -125,9 +114,8 @@
                         localStorage.setItem('fast_hash_cache', JSON.stringify(ROW_HASHES));
                         renderTable();
                     }
-                    document.getElementById('sync-status').innerText = "✓ Live: " + new Date().toLocaleTimeString();
                 }
-            } catch (e) { document.getElementById('sync-status').innerText = "⚠ Sync Error"; }
+            } catch (e) { console.log("Sync failed"); }
         }
 
         function renderTable() {

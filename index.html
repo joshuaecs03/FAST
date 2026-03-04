@@ -23,14 +23,14 @@
         .sidebar-logo { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 1.6rem; letter-spacing: 4px; }
         .sidebar-logo span { color: var(--ecs-orange); }
 
-        #main-content { flex: 1; display: flex; flex-direction: column; background: white; }
+        #main-content { flex: 1; display: flex; flex-direction: column; background: white; position: relative; }
         header { padding: 0 20px; height: 70px; display: flex; align-items: center; border-bottom: 1px solid var(--ecs-border); justify-content: space-between; }
 
         /* DATA TABLE */
         .table-wrapper { flex: 1; overflow: auto; padding: 10px; }
-        table { width: max-content; min-width: 100%; border-collapse: separate; font-size: 11px; } 
-        th { background: #F9FAFB; padding: 12px 15px; position: sticky; top: 0; text-align: left; border-bottom: 2px solid var(--ecs-border); z-index: 10; }
-        td { padding: 12px 15px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; }
+        table { width: max-content; min-width: 100%; border-collapse: separate; font-size: 11px; table-layout: fixed; } 
+        th { background: #F9FAFB; padding: 12px 15px; position: sticky; top: 0; text-align: left; border-bottom: 2px solid var(--ecs-border); z-index: 10; border-right: 1px solid #eee; }
+        td { padding: 12px 15px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-right: 1px solid #f9f9f9; }
         tr:hover td { background-color: #FFF9F5; cursor: pointer; }
 
         /* ZENDESK DRAWER */
@@ -46,7 +46,7 @@
     <div id="login-screen">
         <div class="login-card">
             <div class="sidebar-logo" style="color:black; margin-bottom:20px;">F<span>A</span>ST</div>
-            <p style="color: #6B7280; margin-bottom: 30px;">Workspace Sign-In & CRM Access</p>
+            <p style="color: #6B7280; margin-bottom: 30px;">Authorized Access for @ecs-asbestos.com</p>
             <button class="btn-login" onclick="startAuth()">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_\"G\"_Logo.svg" width="18" alt="">
                 Sign in with Google
@@ -65,9 +65,6 @@
             <button onclick="closeDrawer()" style="border:none; background:none; cursor:pointer; font-size:20px;">✕</button>
         </div>
         <div id="audit-content" style="flex:1; padding:20px; overflow-y:auto; background: #F9FAFB;"></div>
-        <div style="padding:20px; border-top:1px solid #eee;">
-             <button class="btn-login" style="font-size:14px;">Send Follow-up</button>
-        </div>
     </div>
 
     <div id="dashboard" class="hidden">
@@ -81,14 +78,14 @@
         <main id="main-content">
             <header>
                 <h2 id="view-title" style="margin:0;">All Jobs</h2>
-                <div id="sync-indicator" style="font-size:10px; color:#9CA3AF;">Checking for updates...</div>
+                <div id="sync-indicator" style="font-size:10px; color:#9CA3AF;">Syncing...</div>
             </header>
             <div class="table-wrapper"><div id="table-output"></div></div>
         </main>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/a/macros/ecs-asbestos.com/s/AKfycbxEypem6HGdss9VC5fPftKk0OOBd6j-xzvgJxHG5tJAvJ1JunSwp1OH6Gck-gK2MCXcyw/exec";
+        const SCRIPT_URL = "https://script.google.com/a/macros/ecs-asbestos.com/s/AKfycbztvM5BG9pSbVM8VORJ40mwnYX8fhFUsvmvhxzCtp8sJberl_hi4fgPww2t0xB23KfugQ/exec";
         
         function startAuth() { 
             const authUrl = `${SCRIPT_URL}?action=user_login`;
@@ -112,7 +109,7 @@
         async function init() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('user-tag').innerText = "Logged in: " + localStorage.getItem("fast_email");
+            document.getElementById('user-tag').innerText = "Logged in: " + (localStorage.getItem("fast_email") || "Verified");
             await performSurgicalSync();
             setInterval(performSurgicalSync, 20000);
         }
@@ -139,6 +136,10 @@
 
         function renderTable() {
             const fIdx = HEADERS.indexOf("File Number"), nIdx = HEADERS.indexOf("File Name");
+            if (fIdx === -1) {
+                document.getElementById('table-output').innerHTML = "<p style='padding:20px; color:red;'>Error: 'File Number' column not found in sheet.</p>";
+                return;
+            }
             let html = `<table><thead><tr>`;
             HEADERS.forEach(h => html += `<th>${h}</th>`);
             html += `</tr></thead><tbody>`;
@@ -153,7 +154,7 @@
         async function openDrawer(fileNum, fileName) {
             document.getElementById('audit-drawer').classList.add('open');
             document.getElementById('overlay').classList.add('open');
-            document.getElementById('drawer-title').innerText = fileName;
+            document.getElementById('drawer-title').innerText = fileName || "Job Details";
             document.getElementById('drawer-subtitle').innerText = "File #: " + fileNum;
             
             const content = document.getElementById('audit-content');
@@ -163,9 +164,9 @@
                 const res = await fetch(`${SCRIPT_URL}?action=get_audit_logs&fileNum=${fileNum}`);
                 const data = await res.json();
                 content.innerHTML = data.logs.map(l => `
-                    <div class="log-entry">
-                        <div style="font-size:10px; color:#9CA3AF; margin-bottom:5px;">${new Date(l.Timestamp).toLocaleString()}</div>
-                        <strong>${l.Type}</strong><br>${l.Body}
+                    <div style="margin-bottom:15px; padding:10px; background:white; border-radius:8px; border:1px solid #eee;">
+                        <div style="font-size:10px; color:#9CA3AF; margin-bottom:5px;">${l.Timestamp ? new Date(l.Timestamp).toLocaleString() : ''}</div>
+                        <strong>${l.Type || 'Note'}</strong><br>${l.Body || ''}
                     </div>
                 `).join('') || "No logs found for this job.";
             } catch(e) { content.innerHTML = "Error loading history."; }

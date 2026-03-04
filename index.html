@@ -38,6 +38,7 @@
         .controls-area { padding: 12px 30px; border-bottom: 1px solid var(--ecs-border); display: flex; align-items: center; gap: 15px; background: #fff; }
         #searchBar { flex: 1; padding: 10px 20px; border: 1px solid var(--ecs-border); border-radius: 50px; outline: none; font-size: 14px; background: #f3f4f6; }
         
+        /* Clean Column Manager */
         .col-manager { position: relative; }
         #col-btn { background: white; border: 1px solid var(--ecs-border); padding: 8px 18px; border-radius: 50px; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s; }
         #col-btn:hover { background: #f9f9f9; border-color: #d1d5db; }
@@ -84,10 +85,10 @@
             <div class="sidebar-header"><div class="sidebar-logo-small">F<span>A</span>ST</div></div>
             <div class="nav-label">Status Views</div>
             <div class="nav-item active" onclick="setView('All Jobs', this)"><span>All Jobs</span><span class="nav-count" id="cnt-all">-</span></div>
-            <div class="nav-item" onclick="setView('Completed', this)"><span>Completed Jobs</span><span class="nav-count" id="cnt-comp">-</span></div>
-            <div class="nav-item" onclick="setView('Completed Job - Factored', this)"><span>Completed - Factored</span><span class="nav-count" id="cnt-fact">-</span></div>
-            <div class="nav-item" onclick="setView('Testing Only Invoicing', this)"><span>Testing Only Invoicing</span><span class="nav-count" id="cnt-test">-</span></div>
-            <div class="nav-item" onclick="setView('Project Awaiting Approval', this)"><span>Awaiting Approval</span><span class="nav-count" id="cnt-awat">-</span></div>
+            <div class="nav-item" onclick="setView('Completed', this)"><span>Completed</span><span class="nav-count" id="cnt-comp">-</span></div>
+            <div class="nav-item" onclick="setView('Completed Job Factored', this)"><span>Completed Factored</span><span class="nav-count" id="cnt-fact">-</span></div>
+            <div class="nav-item" onclick="setView('Testing Only Invoicing', this)"><span>Testing Invoicing</span><span class="nav-count" id="cnt-test">-</span></div>
+            <div class="nav-item" onclick="setView('Project awaiting approval', this)"><span>Awaiting Approval</span><span class="nav-count" id="cnt-awat">-</span></div>
             
             <div style="margin-top:auto; padding:20px; border-top:1px solid #374151;">
                 <button onclick="logout()" style="width:100%; background:none; border:1px solid #4B5563; color:#9CA3AF; padding:10px; cursor:pointer; border-radius:6px; font-size: 12px;">Logout</button>
@@ -127,6 +128,7 @@
         let HEADERS = JSON.parse(localStorage.getItem('fast_headers_cache') || "[]");
         let COLUMN_DEFS = [], CURRENT_VIEW = 'All Jobs';
 
+        // Exact naming convention from your Xcelerate headers
         const DEFAULT_COLS = ["File Number", "File Name", "Status", "Customer Name", "Loss Address", "Insurance Company", "Total Invoice"];
 
         window.onload = () => { if (localStorage.getItem("fast_active") === "true") showDashboard(); };
@@ -259,9 +261,9 @@
             UI_CACHE.forEach(r => {
                 const s = r[sIdx];
                 if(s === "Completed") c.comp++;
-                else if(s === "Completed Job - Factored") c.fact++;
+                else if(s === "Completed Job Factored") c.fact++;
                 else if(s === "Testing Only Invoicing") c.test++;
-                else if(s === "Project Awaiting Approval") c.awat++;
+                else if(s === "Project awaiting approval") c.awat++;
             });
             document.getElementById('cnt-all').innerText = c.all;
             document.getElementById('cnt-comp').innerText = c.comp;
@@ -280,6 +282,7 @@
 
         function logout() { localStorage.clear(); location.reload(); }
         
+        // Close menu on click outside
         window.addEventListener('click', (e) => {
             if (!e.target.closest('.col-manager')) document.getElementById('col-dropdown').classList.add('hidden');
         });

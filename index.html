@@ -1,179 +1,63 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAST | ECS Asbestos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <style>
-        :root { --ecs-orange: #D4631E; --ecs-dark: #111827; --ecs-border: #E5E7EB; --ecs-bg: #F9FAFB; --sidebar-width: 280px; }
-        body { font-family: 'Inter', sans-serif; margin: 0; background: var(--ecs-bg); color: var(--ecs-dark); height: 100vh; overflow: hidden; }
-        .hidden { display: none !important; }
+/**
+ * MASTER BACKEND | FAST SYSTEM
+ * Optimized for Bulk Download & Surgical Sync
+ */
+const SPREADSHEET_ID = "1V6BuVDf3CNkzsY3smOO9TC48-_TWucpPpMSuTXSe1mA";
+const DATA_SHEET = "Xcelerate Data"; 
+const AUTH_SHEET = "User";
 
-        /* FAST Branded Login */
-        #login-screen { text-align: center; padding-top: 15vh; height: 100vh; background: var(--ecs-bg); }
-        .login-brand { font-family: 'Montserrat', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 8px; font-size: 3.5rem; color: #000; margin-bottom: 30px; }
-        .login-brand span { color: var(--ecs-orange); }
-        .login-card { width: 360px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 14px; }
-        #login-btn { width: 100%; padding: 16px; background: var(--ecs-orange); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; text-transform: uppercase; }
+function doGet(e) {
+  const action = e.parameter.action;
+  try {
+    if (action === "login") return handleLogin(e.parameter.username, e.parameter.password);
+    if (action === "sync_surgical") return handleSurgicalSync(e.parameter.hashes);
+    return createResponse({result: "error", message: "Invalid action"});
+  } catch (err) {
+    return createResponse({result: "error", message: err.toString()});
+  }
+}
 
-        /* Sidebar & Navigation */
-        #dashboard { display: flex; height: 100vh; }
-        #sidebar { width: var(--sidebar-width); background: #1F2937; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
-        .sidebar-header { padding: 25px; border-bottom: 1px solid #374151; }
-        .sidebar-logo-small { font-family: 'Montserrat', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; font-size: 1.2rem; }
-        .sidebar-logo-small span { color: var(--ecs-orange); }
-        .nav-label { font-size: 10px; color: #6B7280; padding: 25px 25px 5px 25px; text-transform: uppercase; font-weight: 600; }
-        .nav-item { padding: 12px 25px; cursor: pointer; font-size: 13px; color: #9CA3AF; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid transparent; transition: 0.2s; }
-        .nav-item.active { background: #111827; color: white; border-left: 4px solid var(--ecs-orange); font-weight: 600; }
-        .nav-count { font-size: 10px; background: #374151; color: #9CA3AF; padding: 2px 8px; border-radius: 10px; }
+function handleLogin(u, p) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(AUTH_SHEET);
+  const data = sheet.getDataRange().getValues();
+  const user = String(u || "").toLowerCase().trim();
+  const pass = String(p || "").trim();
+  const userRow = data.slice(1).find(r => String(r[0]).toLowerCase().trim() === user);
+  
+  if (!userRow) return createResponse({result: "denied", reason: "User not found"});
+  if (String(userRow[1]).trim() === pass) return createResponse({ result: "success" });
+  return createResponse({ result: "denied", reason: "Password mismatch" });
+}
 
-        /* Main Content */
-        #main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: white; }
-        header { background: white; padding: 0 30px; height: 70px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
-        .controls-area { padding: 12px 30px; border-bottom: 1px solid var(--ecs-border); display: flex; align-items: center; gap: 15px; }
-        #searchBar { flex: 1; padding: 10px 20px; border: 1px solid var(--ecs-border); border-radius: 50px; outline: none; background: #f3f4f6; font-size: 14px; }
-        
-        /* Table Layout */
-        .table-wrapper { flex: 1; overflow: auto; margin: 20px; border: 1px solid var(--ecs-border); border-radius: 8px; }
-        table { border-collapse: separate; border-spacing: 0; font-size: 11px; width: max-content; min-width: 100%; table-layout: fixed; }
-        th { background: #F9FAFB; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--ecs-border); border-right: 1px solid #eee; text-align: left; padding: 14px; color: #6B7280; text-transform: uppercase; font-weight: 700; }
-        td { padding: 12px 14px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-right: 1px solid #f9f9f9; color: #374151; }
-        tr:hover td { background-color: #FFF9F5; }
-    </style>
-</head>
-<body>
+function handleSurgicalSync(clientHashesString) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(DATA_SHEET);
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const rows = data.slice(1);
+  
+  let clientHashes = {};
+  try { clientHashes = JSON.parse(clientHashesString || "{}"); } catch(e) { clientHashes = {}; }
 
-    <div id="login-screen">
-        <div class="login-brand">F<span>A</span>ST</div>
-        <div class="login-card">
-            <input type="text" id="u" placeholder="Email Address">
-            <input type="password" id="p" placeholder="Password">
-            <button onclick="handleLogin()" id="login-btn">Sign In</button>
-        </div>
-    </div>
+  const fNumIdx = headers.indexOf("File Number");
+  const updates = [];
 
-    <div id="dashboard" class="hidden">
-        <nav id="sidebar">
-            <div class="sidebar-header"><div class="sidebar-logo-small">F<span>A</span>ST</div></div>
-            <div class="nav-label">Status Views</div>
-            <div class="nav-item active" onclick="setView('All Jobs', this)"><span>All Jobs</span><span class="nav-count" id="cnt-all">-</span></div>
-            <div class="nav-item" onclick="setView('Completed Jobs', this)"><span>Completed Jobs</span><span class="nav-count" id="cnt-comp">-</span></div>
-            <div class="nav-item" onclick="setView('Completed Job - Factored', this)"><span>Completed Factored</span><span class="nav-count" id="cnt-fact">-</span></div>
-            <div class="nav-item" onclick="setView('Testing Only Invoicing', this)"><span>Testing Invoicing</span><span class="nav-count" id="cnt-test">-</span></div>
-            <div class="nav-item" onclick="setView('Project Awaiting Approval', this)"><span>Awaiting Approval</span><span class="nav-count" id="cnt-awat">-</span></div>
-            <div style="margin-top:auto; padding:20px;"><button onclick="logout()" style="width:100%; background:none; border:1px solid #4B5563; color:#9CA3AF; padding:10px; border-radius:6px; cursor:pointer; font-size: 12px;">Logout</button></div>
-        </nav>
+  rows.forEach((row, index) => {
+    // Unique ID: File Number or Row Index
+    const rowId = (fNumIdx !== -1 && row[fNumIdx]) ? String(row[fNumIdx]) : "row-" + (index + 2);
+    const rowContent = row.join("|");
+    const serverHash = Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, rowContent));
+    
+    // If client doesn't have this ID or the data has changed (hash mismatch), send it
+    if (!clientHashes[rowId] || clientHashes[rowId] !== serverHash) {
+      updates.push({ data: row, hash: serverHash, id: rowId });
+    }
+  });
 
-        <main id="main-content">
-            <header><h2 id="view-title" style="margin:0; font-size:1.1rem; font-weight: 600;">All Jobs</h2><div id="sync-status" style="font-size:11px; color:#9CA3AF;">Syncing...</div></header>
-            <div class="controls-area">
-                <input type="text" id="searchBar" oninput="renderTable()" placeholder="Search data...">
-            </div>
-            <div class="table-wrapper" id="table-output"></div>
-        </main>
-    </div>
+  return createResponse({ result: "success", headers: headers, updates: updates });
+}
 
-    <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw03qwvQXRxh1fzuiGTrngVraBGETG-OVFS81dww9Mboe21Ddk3htTGqDJy3xLeHvMpbQ/exec";
-        
-        let UI_CACHE = JSON.parse(localStorage.getItem('fast_data_cache') || "[]");
-        let ROW_HASHES = JSON.parse(localStorage.getItem('fast_hash_cache') || "{}");
-        let HEADERS = JSON.parse(localStorage.getItem('fast_headers_cache') || "[]");
-        let CURRENT_VIEW = 'All Jobs';
-
-        const DEFAULT_COLS = ["File Number", "File Name", "Status", "Customer Name", "Insurance Company", "Total Invoice"];
-
-        window.onload = () => { if (localStorage.getItem("fast_active") === "true") showDashboard(); };
-
-        async function handleLogin() {
-            const u = document.getElementById('u').value.trim(), p = document.getElementById('p').value.trim();
-            if(!u || !p) return;
-            document.getElementById('login-btn').innerText = "Authenticating...";
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`, { method: 'GET', redirect: 'follow' });
-                const data = await res.json();
-                if(data.result === "success") { localStorage.setItem("fast_active", "true"); showDashboard(); } 
-                else { alert(data.reason || "Denied"); document.getElementById('login-btn').innerText = "Sign In"; }
-            } catch (e) { alert("Server connection error."); }
-        }
-
-        function showDashboard() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            if(UI_CACHE.length > 0) { renderTable(); updateCounts(); }
-            performSurgicalSync();
-            setInterval(performSurgicalSync, 30000);
-        }
-
-        async function performSurgicalSync() {
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=sync_surgical&hashes=${encodeURIComponent(JSON.stringify(ROW_HASHES))}`, { method: 'GET', redirect: 'follow' });
-                const json = await res.json();
-                if (json.result === "success") {
-                    HEADERS = json.headers;
-                    localStorage.setItem('fast_headers_cache', JSON.stringify(HEADERS));
-                    if (json.updates && json.updates.length > 0) {
-                        const fIdx = HEADERS.indexOf("File Number");
-                        json.updates.forEach(up => {
-                            const exIdx = UI_CACHE.findIndex(r => String(r[fIdx]) === String(up.id));
-                            if(exIdx !== -1) UI_CACHE[exIdx] = up.data; else UI_CACHE.unshift(up.data);
-                            ROW_HASHES[up.id] = up.hash;
-                        });
-                        localStorage.setItem('fast_data_cache', JSON.stringify(UI_CACHE));
-                        localStorage.setItem('fast_hash_cache', JSON.stringify(ROW_HASHES));
-                        renderTable();
-                        updateCounts();
-                    }
-                    document.getElementById('sync-status').innerText = "✓ Connected | " + UI_CACHE.length + " Jobs";
-                }
-            } catch (e) { document.getElementById('sync-status').innerText = "⚠ Sync Error"; }
-        }
-
-        function renderTable() {
-            if (!HEADERS.length) return;
-            const sIdx = HEADERS.indexOf("Status");
-            const q = document.getElementById("searchBar").value.toUpperCase();
-            let filtered = UI_CACHE.filter(r => (CURRENT_VIEW === 'All Jobs' || String(r[sIdx]) === CURRENT_VIEW) && r.join(" ").toUpperCase().includes(q));
-
-            let html = `<table><thead><tr>`;
-            DEFAULT_COLS.forEach(c => html += `<th>${c}</th>`);
-            html += `</tr></thead><tbody>`;
-            filtered.forEach(r => {
-                html += `<tr>`;
-                DEFAULT_COLS.forEach(c => html += `<td>${r[HEADERS.indexOf(c)] || ''}</td>`);
-                html += `</tr>`;
-            });
-            document.getElementById('table-output').innerHTML = html + `</tbody></table>`;
-        }
-
-        function updateCounts() {
-            const sIdx = HEADERS.indexOf("Status"); if(sIdx === -1) return;
-            const c = { all: UI_CACHE.length, comp: 0, fact: 0, test: 0, awat: 0 };
-            UI_CACHE.forEach(r => {
-                const s = String(r[sIdx]);
-                if(s === "Completed Jobs") c.comp++;
-                else if(s === "Completed Job - Factored") c.fact++;
-                else if(s === "Testing Only Invoicing") c.test++;
-                else if(s === "Project Awaiting Approval") c.awat++;
-            });
-            document.getElementById('cnt-all').innerText = c.all;
-            document.getElementById('cnt-comp').innerText = c.comp;
-            document.getElementById('cnt-fact').innerText = c.fact;
-            document.getElementById('cnt-test').innerText = c.test;
-            document.getElementById('cnt-awat').innerText = c.awat;
-        }
-
-        function setView(v, el) { 
-            CURRENT_VIEW = v; 
-            document.getElementById('view-title').innerText = v;
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            el.classList.add('active');
-            renderTable(); 
-        }
-        function logout() { localStorage.clear(); location.reload(); }
-    </script>
-</body>
-</html>
+function createResponse(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}

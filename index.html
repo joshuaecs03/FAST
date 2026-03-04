@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAST | ECS Asbestos</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         :root { --ecs-orange: #D4631E; --ecs-dark: #111827; --ecs-border: #E5E7EB; --ecs-bg: #F9FAFB; --sidebar-width: 280px; }
         body { font-family: 'Inter', sans-serif; margin: 0; background: var(--ecs-bg); color: var(--ecs-dark); height: 100vh; overflow: hidden; }
@@ -23,72 +24,68 @@
 
         #main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: white; }
         header { background: white; padding: 0 30px; height: 70px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
-        .search-area { padding: 20px 30px; border-bottom: 1px solid var(--ecs-border); }
-        #searchBar { width: 100%; padding: 14px 20px; border: 1px solid var(--ecs-border); border-radius: 50px; outline: none; box-sizing: border-box; }
 
+        /* COLUMN MANAGER DROPDOWN */
+        .col-manager { position: relative; display: inline-block; }
+        .col-dropdown { position: absolute; right: 0; top: 100%; background: white; border: 1px solid var(--ecs-border); border-radius: 8px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); z-index: 100; width: 220px; padding: 10px; }
+        .col-item { display: flex; align-items: center; gap: 10px; padding: 8px; font-size: 12px; cursor: move; border-bottom: 1px solid #f0f0f0; }
+        .col-item:hover { background: #f9f9f9; }
+
+        /* TABLE UI */
         .table-wrapper { flex: 1; overflow: auto; margin: 20px; border: 1px solid var(--ecs-border); border-radius: 8px; }
         table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 11px; }
-        th { background: #F9FAFB; padding: 12px 16px; position: sticky; top: 0; text-align: left; font-size: 10px; color: #6B7280; text-transform: uppercase; border-bottom: 2px solid var(--ecs-border); z-index: 10; }
+        th { background: #F9FAFB; padding: 12px; position: sticky; top: 0; text-align: left; z-index: 10; border-bottom: 2px solid var(--ecs-border); }
+        .header-label { font-size: 10px; color: #6B7280; text-transform: uppercase; font-weight: 700; cursor: pointer; display: block; margin-bottom: 5px; }
+        .col-filter { width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 10px; outline: none; }
         td { padding: 12px 16px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; }
-        tr:hover td { background-color: #FFF9F5; }
-
-        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: #f3f4f6; }
-        .login-card { background: white; padding: 60px; border-radius: 12px; width: 340px; text-align: center; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
-        <div class="login-card">
-            <div class="sidebar-logo" style="color:black; font-size:3rem; margin-bottom:40px;">F<span>A</span>ST</div>
-            <input type="text" id="u" placeholder="Email" style="width:100%; padding:14px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
-            <input type="password" id="p" placeholder="Password" style="width:100%; padding:14px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px;">
-            <button onclick="handleLogin()" style="width:100%; padding:14px; background:var(--ecs-orange); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600;">LOGIN</button>
-            <p id="loginStatus" style="color:red; font-size:12px; margin-top:15px;"></p>
+        <div style="text-align:center; padding-top:15vh;">
+            <div class="sidebar-logo" style="color:black; font-size:3rem;">F<span>A</span>ST</div>
+            <div style="width:320px; margin:40px auto; background:white; padding:40px; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.05);">
+                <input type="text" id="u" placeholder="Email" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius:8px;">
+                <input type="password" id="p" placeholder="Password" style="width:100%; padding:12px; margin-bottom:25px; border:1px solid #ddd; border-radius:8px;">
+                <button onclick="handleLogin()" style="width:100%; padding:14px; background:var(--ecs-orange); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600;">Sign In</button>
+            </div>
         </div>
     </div>
 
     <div id="dashboard" class="hidden">
         <nav id="sidebar">
             <div class="sidebar-header"><div class="sidebar-logo">F<span>A</span>ST</div></div>
-            <div class="nav-label">Dashboard</div>
+            <div class="nav-label">Status Views</div>
             <div class="nav-item active" onclick="setView('All Jobs', this)"><span>All Jobs</span><span class="nav-count" id="count-all">-</span></div>
             <div class="nav-item" onclick="setView('Completed Jobs', this)"><span>Completed</span><span class="nav-count" id="count-comp">-</span></div>
             <div class="nav-item" onclick="setView('Project Awaiting Approval', this)"><span>Awaiting Approval</span><span class="nav-count" id="count-awat">-</span></div>
             <div class="nav-item" onclick="setView('Testing Only Invoicing', this)"><span>Testing Invoicing</span><span class="nav-count" id="count-test">-</span></div>
-            <div class="nav-item" onclick="setView('Completed Job - Factored', this)"><span>Completed & Factored</span><span class="nav-count" id="count-fact">-</span></div>
             
             <div style="margin-top:auto; padding:20px; border-top:1px solid #374151;">
-                <button onclick="logout()" style="width:100%; background:none; border:1px solid #4B5563; color:#9CA3AF; padding:8px; cursor:pointer; font-size:11px;">Logout</button>
+                <button onclick="logout()" style="width:100%; background:none; border:1px solid #4B5563; color:#9CA3AF; padding:10px; cursor:pointer;">Logout</button>
             </div>
         </nav>
         <main id="main-content">
             <header>
                 <h2 id="view-title" style="margin:0;">All Jobs</h2>
-                <div id="sync-status" style="font-size:11px; color:#9CA3AF;">Initializing...</div>
+                <div class="col-manager">
+                    <button onclick="toggleColMenu()" style="background:#f3f4f6; border:1px solid #ddd; padding:8px 15px; border-radius:5px; cursor:pointer; font-size:12px;">⚙ Columns</button>
+                    <div id="col-dropdown" class="col-dropdown hidden">
+                        <div id="col-list"></div>
+                    </div>
+                </div>
+                <div id="sync-status" style="font-size:11px; color:#9CA3AF;">Live</div>
             </header>
-            <div class="search-area"><input type="text" id="searchBar" oninput="instantSearch()" placeholder="Search Jobs (File #, Status, Client, Claim #)..."></div>
             <div class="table-wrapper"><div id="table-output"></div></div>
         </main>
     </div>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyoO-wu2p2j463ePFB5kW59yv45-hxBo7gV8EK0hqbV5t5q1MVn2K8nvWIOFmk4Q0OxSA/exec";
-        
-        let UI_CACHE = [];       
-        let ROW_HASHES = {};     
-        let HEADERS = [];
-        let CURRENT_VIEW = 'All Jobs';
-
-        // --- EDIT THESE TO FILTER YOUR COLUMNS ---
-        const VISIBLE_COLUMNS = [
-            "File Number", 
-            "Status", 
-            "Client Name", 
-            "Claim Number", 
-            "Job Address", 
-            "Project Manager"
-        ];
+        let UI_CACHE = [], HEADERS = [], ROW_HASHES = {}, CURRENT_VIEW = 'All Jobs';
+        let COLUMN_DEFS = []; // { name: "Header", visible: true }
+        let FILTERS = {}, SORT_COL = null, SORT_ASC = true;
 
         window.onload = () => { if (localStorage.getItem("fast_active") === "true") init(); };
 
@@ -97,7 +94,7 @@
             const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
             const data = await res.json();
             if(data.result === "success") { localStorage.setItem("fast_active", "true"); init(); }
-            else { document.getElementById('loginStatus').innerText = "Access Denied"; }
+            else alert("Denied");
         }
 
         async function init() {
@@ -105,98 +102,93 @@
             document.getElementById('dashboard').classList.remove('hidden');
             await performSurgicalSync();
             setInterval(performSurgicalSync, 15000); 
+            initSortable();
         }
 
         async function performSurgicalSync() {
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=sync_surgical&hashes=${encodeURIComponent(JSON.stringify(ROW_HASHES))}`);
                 const json = await res.json();
-
-                if (json.result === "busy") {
-                    document.getElementById('sync-status').innerText = "⚠ Update in progress (Standby)";
-                    return;
-                }
-
                 if (json.result === "success" && json.updates.length > 0) {
-                    HEADERS = json.headers;
+                    if (HEADERS.length === 0) {
+                        HEADERS = json.headers;
+                        COLUMN_DEFS = HEADERS.map(h => ({ name: h, visible: true }));
+                        renderColMenu();
+                    }
                     const fileNumIdx = HEADERS.indexOf("File Number");
-
-                    json.updates.forEach(update => {
-                        const fileNum = update.data[fileNumIdx].toString();
+                    json.updates.forEach(up => {
+                        const fileNum = up.data[fileNumIdx].toString();
                         const existingIdx = UI_CACHE.findIndex(r => r[fileNumIdx].toString() === fileNum);
-                        
-                        if (existingIdx !== -1) { UI_CACHE[existingIdx] = update.data; } 
-                        else { UI_CACHE.unshift(update.data); }
-                        ROW_HASHES[fileNum] = update.hash; 
+                        if(existingIdx !== -1) UI_CACHE[existingIdx] = up.data;
+                        else UI_CACHE.unshift(up.data);
+                        ROW_HASHES[fileNum] = up.hash;
                     });
-
-                    instantSearch(); 
+                    renderTable();
                     updateCounts();
-                    document.getElementById('sync-status').innerText = "✓ Updated: " + new Date().toLocaleTimeString();
-                } else {
-                    document.getElementById('sync-status').innerText = "✓ Live: " + new Date().toLocaleTimeString();
                 }
-            } catch (e) { document.getElementById('sync-status').innerText = "⚠ Reconnecting..."; }
+            } catch (e) { console.error("Sync Error"); }
         }
 
-        function instantSearch() {
-            const q = document.getElementById("searchBar").value.toUpperCase();
+        function renderTable() {
+            const visibleDefs = COLUMN_DEFS.filter(d => d.visible);
             const statusIdx = HEADERS.indexOf("Status");
-            const filtered = UI_CACHE.filter(row => {
-                const matchesView = (CURRENT_VIEW === 'All Jobs' || row[statusIdx] === CURRENT_VIEW);
-                return matchesView && row.join(" ").toUpperCase().includes(q);
-            }).slice(0, 100);
-            render(filtered);
-        }
 
-        function render(rows) {
-            const out = document.getElementById('table-output');
-            if (!rows.length) { out.innerHTML = '<div style="text-align:center; padding:100px;">No records found.</div>'; return; }
-            
-            const colIndices = VISIBLE_COLUMNS.map(name => HEADERS.indexOf(name)).filter(idx => idx !== -1);
+            let filtered = UI_CACHE.filter(row => {
+                const matchesView = (CURRENT_VIEW === 'All Jobs' || row[statusIdx] === CURRENT_VIEW);
+                const matchesFilters = visibleDefs.every(def => {
+                    const idx = HEADERS.indexOf(def.name);
+                    const val = (row[idx] || "").toString().toUpperCase();
+                    const filterVal = (FILTERS[def.name] || "").toUpperCase();
+                    return val.includes(filterVal);
+                });
+                return matchesView && matchesFilters;
+            });
 
             let html = `<table><thead><tr>`;
-            VISIBLE_COLUMNS.forEach((name, i) => {
-                if (colIndices[i] !== -1) html += `<th>${name}</th>`;
+            visibleDefs.forEach(def => {
+                html += `<th>
+                    <span class="header-label" onclick="handleSort('${def.name}')">${def.name}</span>
+                    <input type="text" class="col-filter" placeholder="Filter..." value="${FILTERS[def.name] || ''}" oninput="handleFilter('${def.name}', this.value)">
+                </th>`;
             });
             html += `</tr></thead><tbody>`;
-            
-            rows.forEach(r => {
+            filtered.forEach(r => {
                 html += `<tr>`;
-                colIndices.forEach(idx => {
+                visibleDefs.forEach(def => {
+                    const idx = HEADERS.indexOf(def.name);
                     html += `<td>${r[idx] || ''}</td>`;
                 });
                 html += `</tr>`;
             });
-            out.innerHTML = html + `</tbody></table>`;
+            document.getElementById('table-output').innerHTML = html + `</tbody></table>`;
         }
 
-        function updateCounts() {
-            const statusIdx = HEADERS.indexOf("Status");
-            if (statusIdx === -1) return;
-            const counts = { all: UI_CACHE.length, comp: 0, awat: 0, test: 0, fact: 0 };
-            UI_CACHE.forEach(row => {
-                const s = row[statusIdx];
-                if (s === 'Completed Jobs') counts.comp++;
-                else if (s === 'Project Awaiting Approval') counts.awat++;
-                else if (s === 'Testing Only Invoicing') counts.test++;
-                else if (s === 'Completed Job - Factored') counts.fact++;
+        function renderColMenu() {
+            let html = '';
+            COLUMN_DEFS.forEach((def, i) => {
+                html += `<div class="col-item" data-id="${i}">
+                    <input type="checkbox" ${def.visible ? 'checked' : ''} onchange="toggleVisible(${i})">
+                    <span>${def.name}</span>
+                </div>`;
             });
-            document.getElementById('count-all').innerText = counts.all;
-            document.getElementById('count-comp').innerText = counts.comp;
-            document.getElementById('count-awat').innerText = counts.awat;
-            document.getElementById('count-test').innerText = counts.test;
-            document.getElementById('count-fact').innerText = counts.fact;
+            document.getElementById('col-list').innerHTML = html;
         }
 
-        function setView(view, el) { 
-            CURRENT_VIEW = view; 
-            document.getElementById('view-title').innerText = view;
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            el.classList.add('active');
-            instantSearch(); 
+        function initSortable() {
+            new Sortable(document.getElementById('col-list'), {
+                animation: 150,
+                onEnd: (evt) => {
+                    const movedItem = COLUMN_DEFS.splice(evt.oldIndex, 1)[0];
+                    COLUMN_DEFS.splice(evt.newIndex, 0, movedItem);
+                    renderTable();
+                }
+            });
         }
 
+        function toggleColMenu() { document.getElementById('col-dropdown').classList.toggle('hidden'); }
+        function toggleVisible(i) { COLUMN_DEFS[i].visible = !COLUMN_DEFS[i].visible; renderTable(); }
+        function handleFilter(name, val) { FILTERS[name] = val; renderTable(); }
+        function setView(v, el) { CURRENT_VIEW = v; document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); renderTable(); }
         function logout() { localStorage.clear(); location.reload(); }
     </script>
 </body>

@@ -44,7 +44,7 @@
         .resizer { width: 4px; position: absolute; right: 0; top: 0; bottom: 0; cursor: col-resize; background: transparent; }
         .resizer:hover, .resizing { background: var(--ecs-orange); }
         td { padding: 6px 10px; border-bottom: 1px solid #f3f4f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-right: 1px solid #f9f9f9; color: #374151; }
-        tr:hover td { background-color: #FFF9F5; }
+        tr:hover td { background-color: #FFF9F5; cursor: pointer; }
 
         /* --- CLEAN FILTER POPOVER --- */
         .filter-popover { position: fixed; background: white; border: 1px solid #bbb; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 110; width: 160px; display: none; }
@@ -190,6 +190,8 @@
         function renderTable() {
             if (!HEADERS.length) return;
             const sIdx = HEADERS.indexOf("Status");
+            const fIdx = HEADERS.indexOf("File Number");
+            const nameIdx = HEADERS.indexOf("File Name");
             const q = document.getElementById("searchBar").value.toUpperCase();
             let filtered = UI_CACHE.filter(r => {
                 const matchesView = (CURRENT_VIEW === 'All Jobs' || String(r[sIdx]) === CURRENT_VIEW);
@@ -212,7 +214,9 @@
             });
             html += `</tr></thead><tbody>`;
             filtered.forEach(r => {
-                html += `<tr>`;
+                const fileNum = r[fIdx];
+                const fileName = (r[nameIdx] || 'Job').replace(/'/g, "\\'");
+                html += `<tr onclick="openAuditDrawer('${fileNum}', '${fileName}')">`;
                 ACTIVE_COLS.forEach(c => {
                     const idx = HEADERS.indexOf(c);
                     html += `<td>${idx !== -1 ? (r[idx] || '') : ''}</td>`;
@@ -324,7 +328,7 @@
         window.onclick = () => closeFilter();
         document.getElementById('filter-popover').onclick = e => e.stopPropagation();
     </script>
-<script src="google-mail.js"></script>
-    
+    <script src="google-mail.js"></script>
+    <script src="audit-drawer.js"></script>
 </body>
 </html>

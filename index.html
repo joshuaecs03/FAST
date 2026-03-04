@@ -34,26 +34,45 @@
         th { background: #F9FAFB; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--ecs-border); border-right: 1px solid #eee; text-align: left; padding: 0; color: #4B5563; font-weight: 700; user-select: none; }
         
         .th-content { padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; overflow: hidden; }
-        .resizer { width: 4px; position: absolute; right: 0; top: 0; bottom: 0; cursor: col-resize; background: transparent; transition: background 0.2s; }
+        .resizer { width: 4px; position: absolute; right: 0; top: 0; bottom: 0; cursor: col-resize; background: transparent; }
         .resizer:hover, .resizing { background: var(--ecs-orange); }
 
         td { padding: 6px 12px; border-bottom: 1px solid #f3f4f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-right: 1px solid #f9f9f9; color: #374151; }
         tr:hover td { background-color: #FFFBF7; }
 
-        /* Filter Icons & Menus */
-        .filter-trigger { cursor: pointer; font-size: 10px; color: #9CA3AF; padding: 2px; border-radius: 3px; }
-        .filter-trigger:hover { background: #E5E7EB; color: var(--ecs-dark); }
-        .filter-popover { position: fixed; background: white; border: 1px solid var(--ecs-border); border-radius: 6px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); z-index: 100; min-width: 180px; padding: 10px; display: none; }
-        .filter-popover input { margin-bottom: 8px; font-size: 12px; padding: 6px; border: 1px solid var(--ecs-border); border-radius: 4px; width: 100%; box-sizing: border-box; }
-        .filter-list { max-height: 150px; overflow-y: auto; font-size: 11px; }
-        .filter-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
-
-        /* Column Manager Modal */
+        /* Column Config Modal */
         #col-toggle-btn { background: white; border: 1px solid var(--ecs-border); padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
-        .modal-card { background: white; width: 340px; max-height: 80vh; border-radius: 10px; display: flex; flex-direction: column; }
-        .col-item { display: flex; align-items: center; padding: 8px 10px; background: white; border: 1px solid var(--ecs-border); margin-bottom: 4px; border-radius: 6px; cursor: grab; }
-        .drag-handle { margin-left: auto; color: #9CA3AF; }
+        .modal-card { background: white; width: 360px; max-height: 85vh; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--ecs-border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 15px 20px; overflow-y: auto; flex: 1; }
+        
+        .modal-search-box { padding: 0 20px 10px 20px; }
+        .modal-search-box input { padding: 8px 12px; font-size: 13px; border: 1px solid var(--ecs-border); border-radius: 6px; width: 100%; box-sizing: border-box; }
+
+        .col-item { display: flex; align-items: center; padding: 8px 12px; background: white; border: 1px solid var(--ecs-border); margin-bottom: 4px; border-radius: 8px; cursor: grab; }
+        .col-item input[type="checkbox"] { margin-right: 12px; cursor: pointer; width: auto; }
+        .drag-handle { margin-left: auto; color: #9CA3AF; font-size: 16px; }
+        
+        /* CLEANER FILTER POPOVER (Sheets Style) */
+        .filter-popover { position: fixed; background: white; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 110; min-width: 220px; padding: 0; display: none; }
+        .filter-header { padding: 12px; background: #fff; border-bottom: 1px solid #eee; font-weight: 600; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .filter-search-container { padding: 8px 12px; border-bottom: 1px solid #eee; }
+        .filter-search-container input { width: 100%; padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; box-sizing: border-box; outline: none; }
+        .filter-options-bar { padding: 4px 12px; display: flex; gap: 15px; background: #f9fafb; border-bottom: 1px solid #eee; }
+        .filter-option-btn { font-size: 11px; color: #2563eb; cursor: pointer; text-decoration: none; border: none; background: none; padding: 0; }
+        .filter-option-btn:hover { text-decoration: underline; }
+        .filter-list { max-height: 200px; overflow-y: auto; padding: 8px 0; }
+        .filter-item { padding: 4px 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .filter-item:hover { background: #f3f4f6; }
+        .filter-item input { margin: 0; cursor: pointer; }
+        .filter-item span { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .filter-footer { padding: 10px 12px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 8px; }
+        .filter-btn-secondary { background: #fff; border: 1px solid #ddd; padding: 5px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+        .filter-btn-primary { background: var(--ecs-orange); border: 1px solid var(--ecs-orange); color: #fff; padding: 5px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600; }
+        
+        .filter-trigger { cursor: pointer; font-size: 10px; color: #9CA3AF; padding: 2px; }
+        .filter-active .filter-trigger { color: var(--ecs-orange); }
     </style>
 </head>
 <body>
@@ -90,23 +109,41 @@
     </div>
 
     <div id="filter-popover" class="filter-popover">
-        <input type="text" id="filter-search" placeholder="Filter values..." oninput="refreshFilterList()">
-        <div class="filter-list" id="filter-list"></div>
-        <div style="margin-top:10px; display:flex; justify-content: space-between;">
-            <button onclick="clearFilter()" style="font-size:10px; border:none; background:none; cursor:pointer; color:var(--ecs-orange);">Clear</button>
-            <button onclick="applyFilter()" style="font-size:10px; background:var(--ecs-orange); color:white; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">Apply</button>
+        <div class="filter-header">
+            <span id="filter-title">Filter by</span>
+            <button onclick="closeFilter()" style="border:none; background:none; cursor:pointer; color:#999; font-size:16px;">&times;</button>
+        </div>
+        <div class="filter-search-container">
+            <input type="text" id="filter-search" placeholder="Search values..." oninput="refreshFilterList()">
+        </div>
+        <div class="filter-options-bar">
+            <button class="filter-option-btn" onclick="toggleAllInFilter(true)">Select all</button>
+            <button class="filter-option-btn" onclick="toggleAllInFilter(false)">Clear</button>
+        </div>
+        <div id="filter-list" class="filter-list"></div>
+        <div class="filter-footer">
+            <button class="filter-btn-secondary" onclick="clearFilter()">Reset</button>
+            <button class="filter-btn-primary" onclick="applyFilter()">OK</button>
         </div>
     </div>
 
     <div id="col-modal" class="modal-overlay hidden">
         <div class="modal-card">
-            <div class="modal-header" style="padding:15px; border-bottom:1px solid var(--ecs-border); display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:600; font-size:14px;">Edit Columns</span>
-                <button onclick="toggleColModal()" style="background:none; border:none; font-size:20px; cursor:pointer;">&times;</button>
+            <div class="modal-header">
+                <div style="font-weight: 600; font-size: 15px;">Column Settings</div>
+                <div style="display:flex; align-items: center; gap: 15px;">
+                    <label style="font-size:12px; cursor:pointer; color: var(--ecs-orange); font-weight: 600;">
+                        <input type="checkbox" id="modal-master-check" onclick="toggleAllCols(this.checked)"> All
+                    </label>
+                    <button onclick="toggleColModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#9CA3AF;">&times;</button>
+                </div>
             </div>
-            <div class="modal-body" id="col-list-container" style="padding:15px; overflow-y:auto;"></div>
+            <div class="modal-search-box">
+                <input type="text" id="modal-col-search" placeholder="Search columns..." oninput="filterModalCols()">
+            </div>
+            <div class="modal-body" id="col-list-container"></div>
             <div class="modal-footer" style="padding:15px; border-top:1px solid var(--ecs-border); display:flex; justify-content:flex-end;">
-                <button onclick="saveColumnConfig()" style="background:var(--ecs-orange); color:white; border:none; padding:8px 16px; border-radius:4px; font-weight:600; cursor:pointer;">Save</button>
+                <button onclick="saveColumnConfig()" style="background:var(--ecs-orange); color:white; border:none; padding:10px 20px; border-radius:6px; font-weight:600; cursor:pointer; font-size:13px;">Apply & Save View</button>
             </div>
         </div>
     </div>
@@ -115,23 +152,22 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw03qwvQXRxh1fzuiGTrngVraBGETG-OVFS81dww9Mboe21Ddk3htTGqDJy3xLeHvMpbQ/exec";
         
         let UI_CACHE = [], HEADERS = [], ROW_HASHES = {};
-        let CURRENT_VIEW = 'All Jobs';
+        let CURRENT_VIEW = 'All Jobs', CURRENT_FILTER_COL = null;
+        let ACTIVE_FILTERS = {}; 
+
         let ACTIVE_COLS = JSON.parse(localStorage.getItem('fast_active_cols')) || ["File Number", "File Name", "Status", "Customer Name", "Insurance Company", "Total Invoice"];
         let COL_WIDTHS = JSON.parse(localStorage.getItem('fast_col_widths')) || {};
-        let ACTIVE_FILTERS = {}; // { "Column Name": ["Value1", "Value2"] }
-        let CURRENT_FILTER_COL = null;
 
         window.onload = () => { if (localStorage.getItem("fast_active") === "true") showDashboard(); };
 
-        // --- Auth & Sync ---
         async function handleLogin() {
             const u = document.getElementById('u').value.trim(), p = document.getElementById('p').value.trim();
             if(!u || !p) return;
             try {
-                const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`, { method: 'GET', redirect: 'follow' });
+                const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
                 const data = await res.json();
                 if(data.result === "success") { localStorage.setItem("fast_active", "true"); showDashboard(); } 
-                else { alert(data.reason); }
+                else alert(data.reason);
             } catch (e) { alert("Error connecting."); }
         }
 
@@ -141,7 +177,7 @@
             UI_CACHE = JSON.parse(localStorage.getItem('fast_data_cache') || "[]");
             HEADERS = JSON.parse(localStorage.getItem('fast_headers_cache') || "[]");
             ROW_HASHES = JSON.parse(localStorage.getItem('fast_hash_cache') || "{}");
-            if(UI_CACHE.length > 0) { renderTable(); updateCounts(); }
+            if(UI_CACHE.length > 0) renderTable();
             performSurgicalSync();
             setInterval(performSurgicalSync, 30000);
         }
@@ -163,14 +199,12 @@
                         localStorage.setItem('fast_data_cache', JSON.stringify(UI_CACHE));
                         localStorage.setItem('fast_hash_cache', JSON.stringify(ROW_HASHES));
                         renderTable();
-                        updateCounts();
                     }
                     document.getElementById('sync-status').innerText = "✓ " + UI_CACHE.length + " Jobs";
                 }
             } catch (e) {}
         }
 
-        // --- Table Rendering with Resize & Filter Hooks ---
         function renderTable() {
             if (!HEADERS.length) return;
             const sIdx = HEADERS.indexOf("Status");
@@ -179,12 +213,9 @@
             let filtered = UI_CACHE.filter(r => {
                 const matchesView = (CURRENT_VIEW === 'All Jobs' || String(r[sIdx]) === CURRENT_VIEW);
                 const matchesSearch = r.join(" ").toUpperCase().includes(q);
-                
-                // Column Specific Filters
                 let matchesFilters = true;
                 for (let col in ACTIVE_FILTERS) {
-                    const val = String(r[HEADERS.indexOf(col)]);
-                    if (!ACTIVE_FILTERS[col].includes(val)) { matchesFilters = false; break; }
+                    if (!ACTIVE_FILTERS[col].includes(String(r[HEADERS.indexOf(col)] || ''))) { matchesFilters = false; break; }
                 }
                 return matchesView && matchesSearch && matchesFilters;
             });
@@ -192,9 +223,10 @@
             let html = `<table><thead><tr>`;
             ACTIVE_COLS.forEach(c => {
                 const width = COL_WIDTHS[c] || 150;
-                html += `<th style="width: ${width}px;" data-col="${c}">
+                const isFiltered = ACTIVE_FILTERS[c] ? 'filter-active' : '';
+                html += `<th style="width: ${width}px;" data-col="${c}" class="${isFiltered}">
                     <div class="th-content">
-                        <span style="overflow:hidden; text-overflow:ellipsis;">${c}</span>
+                        <span>${c}</span>
                         <span class="filter-trigger" onclick="openFilter(event, '${c}')">▼</span>
                     </div>
                     <div class="resizer"></div>
@@ -206,16 +238,15 @@
                 html += `<tr>`;
                 ACTIVE_COLS.forEach(c => {
                     const idx = HEADERS.indexOf(c);
-                    const val = idx !== -1 ? (r[idx] || '') : '';
-                    html += `<td>${val}</td>`;
+                    html += `<td>${idx !== -1 ? (r[idx] || '') : ''}</td>`;
                 });
                 html += `</tr>`;
             });
             document.getElementById('table-output').innerHTML = html + `</tbody></table>`;
             initResizers();
+            updateCounts();
         }
 
-        // --- Resizing Logic ---
         function initResizers() {
             document.querySelectorAll('.resizer').forEach(resizer => {
                 resizer.addEventListener('mousedown', (e) => {
@@ -224,94 +255,124 @@
                     const startX = e.pageX;
                     const startWidth = th.offsetWidth;
                     resizer.classList.add('resizing');
-
-                    const onMouseMove = (e) => {
-                        const newWidth = Math.max(50, startWidth + (e.pageX - startX));
-                        th.style.width = newWidth + 'px';
-                        COL_WIDTHS[colName] = newWidth;
+                    const move = (ev) => {
+                        const w = Math.max(50, startWidth + (ev.pageX - startX));
+                        th.style.width = w + 'px';
+                        COL_WIDTHS[colName] = w;
                     };
-
-                    const onMouseUp = () => {
+                    const up = () => {
                         resizer.classList.remove('resizing');
                         localStorage.setItem('fast_col_widths', JSON.stringify(COL_WIDTHS));
-                        document.removeEventListener('mousemove', onMouseMove);
-                        document.removeEventListener('mouseup', onMouseUp);
+                        document.removeEventListener('mousemove', move);
+                        document.removeEventListener('mouseup', up);
                     };
-
-                    document.addEventListener('mousemove', onMouseMove);
-                    document.addEventListener('mouseup', onMouseUp);
+                    document.addEventListener('mousemove', move);
+                    document.addEventListener('mouseup', up);
                 });
             });
         }
 
-        // --- Filtering Logic ---
-        function openFilter(e, colName) {
+        // --- Column Manager Logic ---
+        function toggleColModal() {
+            const m = document.getElementById('col-modal');
+            m.classList.toggle('hidden');
+            if(!m.classList.contains('hidden')) {
+                document.getElementById('modal-col-search').value = '';
+                initModalList();
+            }
+        }
+
+        function initModalList() {
+            const container = document.getElementById('col-list-container');
+            container.innerHTML = '';
+            const allPoss = HEADERS.length ? HEADERS : ACTIVE_COLS;
+            const order = [...ACTIVE_COLS];
+            allPoss.forEach(h => { if(!order.includes(h)) order.push(h); });
+            order.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'col-item'; div.dataset.id = c;
+                div.innerHTML = `<input type="checkbox" class="col-check" ${ACTIVE_COLS.includes(c)?'checked':''}> <span>${c}</span> <span class="drag-handle">⠿</span>`;
+                container.appendChild(div);
+            });
+            new Sortable(container, { animation: 150, handle: '.drag-handle' });
+        }
+
+        function filterModalCols() {
+            const q = document.getElementById('modal-col-search').value.toLowerCase();
+            document.querySelectorAll('.col-item').forEach(item => {
+                const text = item.querySelector('span').innerText.toLowerCase();
+                item.style.display = text.includes(q) ? 'flex' : 'none';
+            });
+        }
+
+        function toggleAllCols(checked) {
+            document.querySelectorAll('.col-check').forEach(cb => cb.checked = checked);
+        }
+
+        function saveColumnConfig() {
+            const active = [];
+            document.querySelectorAll('.col-item').forEach(i => { if(i.querySelector('.col-check').checked) active.push(i.dataset.id); });
+            if(!active.length) return;
+            ACTIVE_COLS = active;
+            localStorage.setItem('fast_active_cols', JSON.stringify(ACTIVE_COLS));
+            renderTable(); toggleColModal();
+        }
+
+        // --- Clean Sheets Filtering Logic ---
+        function openFilter(e, col) {
             e.stopPropagation();
-            CURRENT_FILTER_COL = colName;
-            const popover = document.getElementById('filter-popover');
-            popover.style.display = 'block';
-            popover.style.top = (e.clientY + 10) + 'px';
-            popover.style.left = (e.clientX - 100) + 'px';
+            CURRENT_FILTER_COL = col;
+            const pop = document.getElementById('filter-popover');
+            pop.style.display = 'block';
+            
+            // Positioning popover near the trigger
+            pop.style.top = (e.clientY + 5) + 'px';
+            pop.style.left = (e.clientX - 100) + 'px';
+            
             document.getElementById('filter-search').value = '';
+            document.getElementById('filter-title').innerText = "Filter by " + col;
             refreshFilterList();
         }
 
+        function closeFilter() { document.getElementById('filter-popover').style.display = 'none'; }
+
         function refreshFilterList() {
             const idx = HEADERS.indexOf(CURRENT_FILTER_COL);
-            const search = document.getElementById('filter-search').value.toLowerCase();
-            const uniqueValues = [...new Set(UI_CACHE.map(r => String(r[idx])))].sort();
+            const q = document.getElementById('filter-search').value.toLowerCase();
+            const vals = [...new Set(UI_CACHE.map(r => String(r[idx] || '')))].sort();
             
-            let html = '';
-            uniqueValues.filter(v => v.toLowerCase().includes(search)).forEach(v => {
+            let h = '';
+            vals.filter(v => v.toLowerCase().includes(q)).forEach(v => {
                 const checked = (!ACTIVE_FILTERS[CURRENT_FILTER_COL] || ACTIVE_FILTERS[CURRENT_FILTER_COL].includes(v)) ? 'checked' : '';
-                html += `<div class="filter-item"><input type="checkbox" value="${v}" ${checked}> ${v || '(Empty)'}</div>`;
+                h += `
+                <div class="filter-item" onclick="this.querySelector('input').click(); event.stopPropagation();">
+                    <input type="checkbox" value="${v}" ${checked} onclick="event.stopPropagation();">
+                    <span>${v || '(Blanks)'}</span>
+                </div>`;
             });
-            document.getElementById('filter-list').innerHTML = html;
+            document.getElementById('filter-list').innerHTML = h;
+        }
+
+        function toggleAllInFilter(checked) {
+            document.querySelectorAll('#filter-list input').forEach(i => i.checked = checked);
         }
 
         function applyFilter() {
-            const selected = [];
-            document.querySelectorAll('#filter-list input:checked').forEach(i => selected.push(i.value));
-            ACTIVE_FILTERS[CURRENT_FILTER_COL] = selected;
-            document.getElementById('filter-popover').style.display = 'none';
+            const sel = [];
+            document.querySelectorAll('#filter-list input:checked').forEach(i => sel.push(i.value));
+            ACTIVE_FILTERS[CURRENT_FILTER_COL] = sel;
+            closeFilter();
             renderTable();
         }
 
         function clearFilter() {
             delete ACTIVE_FILTERS[CURRENT_FILTER_COL];
-            document.getElementById('filter-popover').style.display = 'none';
+            closeFilter();
             renderTable();
         }
 
-        // Global click to close popover
-        window.addEventListener('click', () => { document.getElementById('filter-popover').style.display = 'none'; });
-        document.getElementById('filter-popover').onclick = (e) => e.stopPropagation();
-
-        // --- Column Manager ---
-        function toggleColModal() {
-            const modal = document.getElementById('col-modal');
-            modal.classList.toggle('hidden');
-            if(!modal.classList.contains('hidden')) {
-                const container = document.getElementById('col-list-container');
-                container.innerHTML = '';
-                const all = HEADERS.length ? HEADERS : ACTIVE_COLS;
-                [...new Set([...ACTIVE_COLS, ...all])].forEach(c => {
-                    const div = document.createElement('div');
-                    div.className = 'col-item'; div.dataset.id = c;
-                    div.innerHTML = `<input type="checkbox" class="col-check" ${ACTIVE_COLS.includes(c)?'checked':''}> <span style="font-size:12px">${c}</span> <span class="drag-handle">⠿</span>`;
-                    container.appendChild(div);
-                });
-                new Sortable(container, { animation: 150, handle: '.drag-handle' });
-            }
-        }
-
-        function saveColumnConfig() {
-            const newActive = [];
-            document.querySelectorAll('.col-item').forEach(i => { if(i.querySelector('.col-check').checked) newActive.push(i.dataset.id); });
-            ACTIVE_COLS = newActive;
-            localStorage.setItem('fast_active_cols', JSON.stringify(ACTIVE_COLS));
-            renderTable(); toggleColModal();
-        }
+        window.onclick = () => { closeFilter(); };
+        document.getElementById('filter-popover').onclick = e => e.stopPropagation();
 
         function updateCounts() {
             const sIdx = HEADERS.indexOf("Status"); if(sIdx === -1) return;

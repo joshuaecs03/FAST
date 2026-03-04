@@ -7,72 +7,64 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
-        :root { --ecs-orange: #D4631E; --ecs-dark: #111827; --ecs-border: #E5E7EB; --ecs-bg: #F9FAFB; --sidebar-width: 260px; }
+        :root { --ecs-orange: #D4631E; --ecs-dark: #111827; --ecs-border: #E5E7EB; --ecs-bg: #F9FAFB; --sidebar-width: 280px; }
         body { font-family: 'Inter', sans-serif; margin: 0; background: var(--ecs-bg); color: var(--ecs-dark); height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
 
-        /* Sidebar & Layout */
+        /* RESTORED ORIGINAL LOGIN BRANDING */
+        #login-screen { text-align: center; padding-top: 15vh; height: 100vh; background: var(--ecs-bg); }
+        .login-brand { font-family: 'Montserrat', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 8px; font-size: 3.5rem; color: #000; margin-bottom: 30px; }
+        .login-brand span { color: var(--ecs-orange); }
+        .login-card { width: 360px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 14px; }
+        #login-btn { width: 100%; padding: 16px; background: var(--ecs-orange); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; text-transform: uppercase; }
+
+        /* DASHBOARD & SIDEBAR */
         #dashboard { display: flex; height: 100vh; }
         #sidebar { width: var(--sidebar-width); background: #1F2937; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid #374151; }
-        .sidebar-logo-small { font-family: 'Montserrat', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; font-size: 1.1rem; }
+        .sidebar-header { padding: 25px; border-bottom: 1px solid #374151; }
+        .sidebar-logo-small { font-family: 'Montserrat', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; font-size: 1.2rem; }
         .sidebar-logo-small span { color: var(--ecs-orange); }
-        .nav-label { font-size: 9px; color: #6B7280; padding: 20px 20px 5px 20px; text-transform: uppercase; font-weight: 600; }
-        .nav-item { padding: 10px 20px; cursor: pointer; font-size: 12px; color: #9CA3AF; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid transparent; transition: 0.2s; }
+        .nav-label { font-size: 10px; color: #6B7280; padding: 25px 25px 5px 25px; text-transform: uppercase; font-weight: 600; }
+        .nav-item { padding: 12px 25px; cursor: pointer; font-size: 13px; color: #9CA3AF; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid transparent; transition: 0.2s; }
         .nav-item.active { background: #111827; color: white; border-left: 4px solid var(--ecs-orange); font-weight: 600; }
-        .nav-count { font-size: 9px; background: #374151; color: #9CA3AF; padding: 1px 6px; border-radius: 10px; }
+        .nav-count { font-size: 10px; background: #374151; color: #9CA3AF; padding: 2px 8px; border-radius: 10px; }
 
-        /* Main Content */
+        /* MAIN CONTENT & TIGHT TABLE */
         #main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: white; }
-        header { background: white; padding: 0 20px; height: 60px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
-        .controls-area { padding: 10px 20px; border-bottom: 1px solid var(--ecs-border); display: flex; align-items: center; gap: 10px; background: #fff; }
-        #searchBar { flex: 1; padding: 8px 18px; border: 1px solid var(--ecs-border); border-radius: 50px; outline: none; background: #f3f4f6; font-size: 13px; }
+        header { background: white; padding: 0 30px; height: 70px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
+        .controls-area { padding: 12px 30px; border-bottom: 1px solid var(--ecs-border); display: flex; align-items: center; gap: 15px; }
+        #searchBar { flex: 1; padding: 10px 20px; border: 1px solid var(--ecs-border); border-radius: 50px; outline: none; background: #f3f4f6; font-size: 14px; }
         
-        /* Table & Resizing */
-        .table-wrapper { flex: 1; overflow: auto; margin: 15px; border: 1px solid var(--ecs-border); border-radius: 6px; position: relative; }
+        #col-toggle-btn { background: white; border: 1px solid var(--ecs-border); padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+
+        /* TABLE LOGIC */
+        .table-wrapper { flex: 1; overflow: auto; margin: 20px; border: 1px solid var(--ecs-border); border-radius: 8px; position: relative; }
         table { border-collapse: separate; border-spacing: 0; font-size: 11px; width: auto; table-layout: fixed; }
-        th { background: #F9FAFB; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--ecs-border); border-right: 1px solid #eee; text-align: left; padding: 0; color: #4B5563; font-weight: 700; user-select: none; }
+        th { background: #F9FAFB; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--ecs-border); border-right: 1px solid #eee; text-align: left; padding: 0; color: #6B7280; font-weight: 700; text-transform: uppercase; user-select: none; }
         
-        .th-content { padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; overflow: hidden; }
+        .th-content { padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; overflow: hidden; }
         .resizer { width: 4px; position: absolute; right: 0; top: 0; bottom: 0; cursor: col-resize; background: transparent; }
         .resizer:hover, .resizing { background: var(--ecs-orange); }
 
-        td { padding: 6px 12px; border-bottom: 1px solid #f3f4f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-right: 1px solid #f9f9f9; color: #374151; }
-        tr:hover td { background-color: #FFFBF7; }
+        td { padding: 8px 14px; border-bottom: 1px solid #f3f4f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-right: 1px solid #f9f9f9; color: #374151; }
+        tr:hover td { background-color: #FFF9F5; }
 
-        /* Column Config Modal */
-        #col-toggle-btn { background: white; border: 1px solid var(--ecs-border); padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
-        .modal-card { background: white; width: 360px; max-height: 85vh; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
-        .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--ecs-border); display: flex; justify-content: space-between; align-items: center; }
-        .modal-body { padding: 15px 20px; overflow-y: auto; flex: 1; }
-        
-        .modal-search-box { padding: 0 20px 10px 20px; }
-        .modal-search-box input { padding: 8px 12px; font-size: 13px; border: 1px solid var(--ecs-border); border-radius: 6px; width: 100%; box-sizing: border-box; }
-
-        .col-item { display: flex; align-items: center; padding: 8px 12px; background: white; border: 1px solid var(--ecs-border); margin-bottom: 4px; border-radius: 8px; cursor: grab; }
-        .col-item input[type="checkbox"] { margin-right: 12px; cursor: pointer; width: auto; }
-        .drag-handle { margin-left: auto; color: #9CA3AF; font-size: 16px; }
-        
-        /* CLEANER FILTER POPOVER (Sheets Style) */
-        .filter-popover { position: fixed; background: white; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 110; min-width: 220px; padding: 0; display: none; }
-        .filter-header { padding: 12px; background: #fff; border-bottom: 1px solid #eee; font-weight: 600; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .filter-search-container { padding: 8px 12px; border-bottom: 1px solid #eee; }
-        .filter-search-container input { width: 100%; padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; box-sizing: border-box; outline: none; }
-        .filter-options-bar { padding: 4px 12px; display: flex; gap: 15px; background: #f9fafb; border-bottom: 1px solid #eee; }
-        .filter-option-btn { font-size: 11px; color: #2563eb; cursor: pointer; text-decoration: none; border: none; background: none; padding: 0; }
-        .filter-option-btn:hover { text-decoration: underline; }
-        .filter-list { max-height: 200px; overflow-y: auto; padding: 8px 0; }
-        .filter-item { padding: 4px 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        /* FILTER POPOVER UI */
+        .filter-popover { position: fixed; background: white; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); z-index: 110; min-width: 220px; display: none; }
+        .filter-header { padding: 12px; border-bottom: 1px solid #eee; font-weight: 600; font-size: 12px; display: flex; justify-content: space-between; }
+        .filter-search-container { padding: 8px 12px; }
+        .filter-search-container input { padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; width: 100%; box-sizing: border-box; }
+        .filter-list { max-height: 180px; overflow-y: auto; padding-bottom: 5px; }
+        .filter-item { padding: 5px 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 12px; }
         .filter-item:hover { background: #f3f4f6; }
-        .filter-item input { margin: 0; cursor: pointer; }
-        .filter-item span { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .filter-footer { padding: 10px 12px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 8px; }
-        .filter-btn-secondary { background: #fff; border: 1px solid #ddd; padding: 5px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; }
-        .filter-btn-primary { background: var(--ecs-orange); border: 1px solid var(--ecs-orange); color: #fff; padding: 5px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600; }
+        .filter-footer { padding: 10px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 8px; }
         
-        .filter-trigger { cursor: pointer; font-size: 10px; color: #9CA3AF; padding: 2px; }
-        .filter-active .filter-trigger { color: var(--ecs-orange); }
+        /* COLUMN MODAL */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .modal-card { background: white; width: 380px; max-height: 85vh; border-radius: 12px; display: flex; flex-direction: column; }
+        .col-item { display: flex; align-items: center; padding: 10px 15px; border: 1px solid var(--ecs-border); margin-bottom: 5px; border-radius: 8px; background: white; cursor: grab; }
+        .drag-handle { margin-left: auto; color: #9CA3AF; }
     </style>
 </head>
 <body>
@@ -95,11 +87,11 @@
             <div class="nav-item" onclick="setView('Completed Job - Factored', this)"><span>Completed Factored</span><span class="nav-count" id="cnt-fact">-</span></div>
             <div class="nav-item" onclick="setView('Testing Only Invoicing', this)"><span>Testing Invoicing</span><span class="nav-count" id="cnt-test">-</span></div>
             <div class="nav-item" onclick="setView('Project Awaiting Approval', this)"><span>Awaiting Approval</span><span class="nav-count" id="cnt-awat">-</span></div>
-            <div style="margin-top:auto; padding:15px;"><button onclick="logout()" style="width:100%; border:1px solid #4B5563; color:#9CA3AF; background:none; padding:8px; border-radius:6px; cursor:pointer; font-size: 11px;">Logout</button></div>
+            <div style="margin-top:auto; padding:20px;"><button onclick="logout()" style="width:100%; background:none; border:1px solid #4B5563; color:#9CA3AF; padding:10px; border-radius:6px; cursor:pointer; font-size: 12px;">Logout</button></div>
         </nav>
 
         <main id="main-content">
-            <header><h2 id="view-title" style="margin:0; font-size:1rem; font-weight: 600;">All Jobs</h2><div id="sync-status" style="font-size:10px; color:#9CA3AF;">Syncing...</div></header>
+            <header><h2 id="view-title" style="margin:0; font-size:1.1rem; font-weight: 600;">All Jobs</h2><div id="sync-status" style="font-size:11px; color:#9CA3AF;">Syncing...</div></header>
             <div class="controls-area">
                 <input type="text" id="searchBar" oninput="renderTable()" placeholder="Quick Search...">
                 <button id="col-toggle-btn" onclick="toggleColModal()"><span>⚙</span> Columns</button>
@@ -109,41 +101,23 @@
     </div>
 
     <div id="filter-popover" class="filter-popover">
-        <div class="filter-header">
-            <span id="filter-title">Filter by</span>
-            <button onclick="closeFilter()" style="border:none; background:none; cursor:pointer; color:#999; font-size:16px;">&times;</button>
-        </div>
-        <div class="filter-search-container">
-            <input type="text" id="filter-search" placeholder="Search values..." oninput="refreshFilterList()">
-        </div>
-        <div class="filter-options-bar">
-            <button class="filter-option-btn" onclick="toggleAllInFilter(true)">Select all</button>
-            <button class="filter-option-btn" onclick="toggleAllInFilter(false)">Clear</button>
-        </div>
+        <div class="filter-header"><span id="filter-title">Filter</span><button onclick="closeFilter()" style="border:none; background:none; cursor:pointer;">&times;</button></div>
+        <div class="filter-search-container"><input type="text" id="filter-search" placeholder="Search values..." oninput="refreshFilterList()"></div>
+        <div style="padding: 0 12px 5px 12px; display: flex; gap: 10px;"><button onclick="toggleAllFilter(true)" style="font-size:10px; color:#2563eb; border:none; background:none; cursor:pointer;">Select all</button><button onclick="toggleAllFilter(false)" style="font-size:10px; color:#2563eb; border:none; background:none; cursor:pointer;">Clear</button></div>
         <div id="filter-list" class="filter-list"></div>
-        <div class="filter-footer">
-            <button class="filter-btn-secondary" onclick="clearFilter()">Reset</button>
-            <button class="filter-btn-primary" onclick="applyFilter()">OK</button>
-        </div>
+        <div class="filter-footer"><button onclick="clearFilter()" style="font-size:11px; border:none; background:none; cursor:pointer; color:var(--ecs-orange);">Reset</button><button onclick="applyFilter()" style="background:var(--ecs-orange); color:white; border:none; padding:5px 12px; border-radius:4px; font-size:11px; cursor:pointer;">OK</button></div>
     </div>
 
     <div id="col-modal" class="modal-overlay hidden">
         <div class="modal-card">
-            <div class="modal-header">
-                <div style="font-weight: 600; font-size: 15px;">Column Settings</div>
-                <div style="display:flex; align-items: center; gap: 15px;">
-                    <label style="font-size:12px; cursor:pointer; color: var(--ecs-orange); font-weight: 600;">
-                        <input type="checkbox" id="modal-master-check" onclick="toggleAllCols(this.checked)"> All
-                    </label>
-                    <button onclick="toggleColModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#9CA3AF;">&times;</button>
-                </div>
+            <div class="modal-header" style="padding:20px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:600;">Column Preferences</span>
+                <label style="font-size:12px; color:var(--ecs-orange); cursor:pointer;"><input type="checkbox" onclick="toggleAllCols(this.checked)"> All</label>
             </div>
-            <div class="modal-search-box">
-                <input type="text" id="modal-col-search" placeholder="Search columns..." oninput="filterModalCols()">
-            </div>
+            <div style="padding:10px 20px;"><input type="text" id="modal-col-search" placeholder="Search columns..." oninput="filterModalCols()" style="margin-bottom:0;"></div>
             <div class="modal-body" id="col-list-container"></div>
-            <div class="modal-footer" style="padding:15px; border-top:1px solid var(--ecs-border); display:flex; justify-content:flex-end;">
-                <button onclick="saveColumnConfig()" style="background:var(--ecs-orange); color:white; border:none; padding:10px 20px; border-radius:6px; font-weight:600; cursor:pointer; font-size:13px;">Apply & Save View</button>
+            <div style="padding:20px; border-top:1px solid #eee; display:flex; justify-content:flex-end;">
+                <button onclick="saveColumnConfig()" style="background:var(--ecs-orange); color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:700; cursor:pointer;">Apply Changes</button>
             </div>
         </div>
     </div>
@@ -152,9 +126,8 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw03qwvQXRxh1fzuiGTrngVraBGETG-OVFS81dww9Mboe21Ddk3htTGqDJy3xLeHvMpbQ/exec";
         
         let UI_CACHE = [], HEADERS = [], ROW_HASHES = {};
-        let CURRENT_VIEW = 'All Jobs', CURRENT_FILTER_COL = null;
-        let ACTIVE_FILTERS = {}; 
-
+        let CURRENT_VIEW = 'All Jobs', CURRENT_FILTER_COL = null, ACTIVE_FILTERS = {}; 
+        
         let ACTIVE_COLS = JSON.parse(localStorage.getItem('fast_active_cols')) || ["File Number", "File Name", "Status", "Customer Name", "Insurance Company", "Total Invoice"];
         let COL_WIDTHS = JSON.parse(localStorage.getItem('fast_col_widths')) || {};
 
@@ -163,12 +136,13 @@
         async function handleLogin() {
             const u = document.getElementById('u').value.trim(), p = document.getElementById('p').value.trim();
             if(!u || !p) return;
+            document.getElementById('login-btn').innerText = "Authenticating...";
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
                 const data = await res.json();
                 if(data.result === "success") { localStorage.setItem("fast_active", "true"); showDashboard(); } 
-                else alert(data.reason);
-            } catch (e) { alert("Error connecting."); }
+                else { alert(data.reason); document.getElementById('login-btn').innerText = "Sign In"; }
+            } catch (e) { alert("Connection error."); }
         }
 
         function showDashboard() {
@@ -209,7 +183,6 @@
             if (!HEADERS.length) return;
             const sIdx = HEADERS.indexOf("Status");
             const q = document.getElementById("searchBar").value.toUpperCase();
-
             let filtered = UI_CACHE.filter(r => {
                 const matchesView = (CURRENT_VIEW === 'All Jobs' || String(r[sIdx]) === CURRENT_VIEW);
                 const matchesSearch = r.join(" ").toUpperCase().includes(q);
@@ -222,18 +195,13 @@
 
             let html = `<table><thead><tr>`;
             ACTIVE_COLS.forEach(c => {
-                const width = COL_WIDTHS[c] || 150;
-                const isFiltered = ACTIVE_FILTERS[c] ? 'filter-active' : '';
-                html += `<th style="width: ${width}px;" data-col="${c}" class="${isFiltered}">
-                    <div class="th-content">
-                        <span>${c}</span>
-                        <span class="filter-trigger" onclick="openFilter(event, '${c}')">▼</span>
-                    </div>
+                const width = COL_WIDTHS[c] || 160;
+                html += `<th style="width:${width}px;" data-col="${c}">
+                    <div class="th-content"><span>${c}</span><span class="filter-trigger" onclick="openFilter(event, '${c}')">▼</span></div>
                     <div class="resizer"></div>
                 </th>`;
             });
             html += `</tr></thead><tbody>`;
-            
             filtered.forEach(r => {
                 html += `<tr>`;
                 ACTIVE_COLS.forEach(c => {
@@ -243,8 +211,7 @@
                 html += `</tr>`;
             });
             document.getElementById('table-output').innerHTML = html + `</tbody></table>`;
-            initResizers();
-            updateCounts();
+            initResizers(); updateCounts();
         }
 
         function initResizers() {
@@ -252,8 +219,7 @@
                 resizer.addEventListener('mousedown', (e) => {
                     const th = resizer.parentElement;
                     const colName = th.dataset.col;
-                    const startX = e.pageX;
-                    const startWidth = th.offsetWidth;
+                    const startX = e.pageX, startWidth = th.offsetWidth;
                     resizer.classList.add('resizing');
                     const move = (ev) => {
                         const w = Math.max(50, startWidth + (ev.pageX - startX));
@@ -272,107 +238,60 @@
             });
         }
 
-        // --- Column Manager Logic ---
-        function toggleColModal() {
-            const m = document.getElementById('col-modal');
-            m.classList.toggle('hidden');
-            if(!m.classList.contains('hidden')) {
-                document.getElementById('modal-col-search').value = '';
-                initModalList();
-            }
-        }
-
-        function initModalList() {
-            const container = document.getElementById('col-list-container');
-            container.innerHTML = '';
-            const allPoss = HEADERS.length ? HEADERS : ACTIVE_COLS;
-            const order = [...ACTIVE_COLS];
-            allPoss.forEach(h => { if(!order.includes(h)) order.push(h); });
-            order.forEach(c => {
-                const div = document.createElement('div');
-                div.className = 'col-item'; div.dataset.id = c;
-                div.innerHTML = `<input type="checkbox" class="col-check" ${ACTIVE_COLS.includes(c)?'checked':''}> <span>${c}</span> <span class="drag-handle">⠿</span>`;
-                container.appendChild(div);
-            });
-            new Sortable(container, { animation: 150, handle: '.drag-handle' });
-        }
-
-        function filterModalCols() {
-            const q = document.getElementById('modal-col-search').value.toLowerCase();
-            document.querySelectorAll('.col-item').forEach(item => {
-                const text = item.querySelector('span').innerText.toLowerCase();
-                item.style.display = text.includes(q) ? 'flex' : 'none';
-            });
-        }
-
-        function toggleAllCols(checked) {
-            document.querySelectorAll('.col-check').forEach(cb => cb.checked = checked);
-        }
-
-        function saveColumnConfig() {
-            const active = [];
-            document.querySelectorAll('.col-item').forEach(i => { if(i.querySelector('.col-check').checked) active.push(i.dataset.id); });
-            if(!active.length) return;
-            ACTIVE_COLS = active;
-            localStorage.setItem('fast_active_cols', JSON.stringify(ACTIVE_COLS));
-            renderTable(); toggleColModal();
-        }
-
-        // --- Clean Sheets Filtering Logic ---
+        // --- Filtering ---
         function openFilter(e, col) {
-            e.stopPropagation();
-            CURRENT_FILTER_COL = col;
+            e.stopPropagation(); CURRENT_FILTER_COL = col;
             const pop = document.getElementById('filter-popover');
-            pop.style.display = 'block';
-            
-            // Positioning popover near the trigger
-            pop.style.top = (e.clientY + 5) + 'px';
-            pop.style.left = (e.clientX - 100) + 'px';
-            
+            pop.style.display = 'block'; pop.style.top = (e.clientY + 5) + 'px'; pop.style.left = (e.clientX - 100) + 'px';
             document.getElementById('filter-search').value = '';
-            document.getElementById('filter-title').innerText = "Filter by " + col;
             refreshFilterList();
         }
-
         function closeFilter() { document.getElementById('filter-popover').style.display = 'none'; }
-
         function refreshFilterList() {
             const idx = HEADERS.indexOf(CURRENT_FILTER_COL);
             const q = document.getElementById('filter-search').value.toLowerCase();
             const vals = [...new Set(UI_CACHE.map(r => String(r[idx] || '')))].sort();
-            
             let h = '';
             vals.filter(v => v.toLowerCase().includes(q)).forEach(v => {
                 const checked = (!ACTIVE_FILTERS[CURRENT_FILTER_COL] || ACTIVE_FILTERS[CURRENT_FILTER_COL].includes(v)) ? 'checked' : '';
-                h += `
-                <div class="filter-item" onclick="this.querySelector('input').click(); event.stopPropagation();">
-                    <input type="checkbox" value="${v}" ${checked} onclick="event.stopPropagation();">
-                    <span>${v || '(Blanks)'}</span>
-                </div>`;
+                h += `<div class="filter-item" onclick="this.querySelector('input').click(); event.stopPropagation();"><input type="checkbox" value="${v}" ${checked} onclick="event.stopPropagation();"><span>${v || '(Blanks)'}</span></div>`;
             });
             document.getElementById('filter-list').innerHTML = h;
         }
-
-        function toggleAllInFilter(checked) {
-            document.querySelectorAll('#filter-list input').forEach(i => i.checked = checked);
-        }
-
+        function toggleAllFilter(checked) { document.querySelectorAll('#filter-list input').forEach(i => i.checked = checked); }
         function applyFilter() {
-            const sel = [];
-            document.querySelectorAll('#filter-list input:checked').forEach(i => sel.push(i.value));
-            ACTIVE_FILTERS[CURRENT_FILTER_COL] = sel;
-            closeFilter();
-            renderTable();
+            const sel = []; document.querySelectorAll('#filter-list input:checked').forEach(i => sel.push(i.value));
+            ACTIVE_FILTERS[CURRENT_FILTER_COL] = sel; closeFilter(); renderTable();
         }
+        function clearFilter() { delete ACTIVE_FILTERS[CURRENT_FILTER_COL]; closeFilter(); renderTable(); }
 
-        function clearFilter() {
-            delete ACTIVE_FILTERS[CURRENT_FILTER_COL];
-            closeFilter();
-            renderTable();
+        // --- Column Manager ---
+        function toggleColModal() {
+            const m = document.getElementById('col-modal');
+            m.classList.toggle('hidden');
+            if(!m.classList.contains('hidden')) { document.getElementById('modal-col-search').value = ''; initModalList(); }
         }
-
-        window.onclick = () => { closeFilter(); };
-        document.getElementById('filter-popover').onclick = e => e.stopPropagation();
+        function initModalList() {
+            const container = document.getElementById('col-list-container'), all = HEADERS.length ? HEADERS : ACTIVE_COLS, order = [...ACTIVE_COLS];
+            all.forEach(h => { if(!order.includes(h)) order.push(h); });
+            container.innerHTML = '';
+            order.forEach(c => {
+                const div = document.createElement('div'); div.className = 'col-item'; div.dataset.id = c;
+                div.innerHTML = `<input type="checkbox" class="col-check" ${ACTIVE_COLS.includes(c)?'checked':''}> <span style="font-size:13px">${c}</span> <span class="drag-handle">⠿</span>`;
+                container.appendChild(div);
+            });
+            new Sortable(container, { animation: 150, handle: '.drag-handle' });
+        }
+        function filterModalCols() {
+            const q = document.getElementById('modal-col-search').value.toLowerCase();
+            document.querySelectorAll('.col-item').forEach(i => i.style.display = i.querySelector('span').innerText.toLowerCase().includes(q) ? 'flex' : 'none');
+        }
+        function toggleAllCols(checked) { document.querySelectorAll('.col-check').forEach(c => c.checked = checked); }
+        function saveColumnConfig() {
+            const active = []; document.querySelectorAll('.col-item').forEach(i => { if(i.querySelector('.col-check').checked) active.push(i.dataset.id); });
+            ACTIVE_COLS = active; localStorage.setItem('fast_active_cols', JSON.stringify(ACTIVE_COLS));
+            renderTable(); toggleColModal();
+        }
 
         function updateCounts() {
             const sIdx = HEADERS.indexOf("Status"); if(sIdx === -1) return;
@@ -384,22 +303,12 @@
                 else if(s === "Testing Only Invoicing") c.test++;
                 else if(s === "Project Awaiting Approval") c.awat++;
             });
-            document.getElementById('cnt-all').innerText = c.all;
-            document.getElementById('cnt-comp').innerText = c.comp;
-            document.getElementById('cnt-fact').innerText = c.fact;
-            document.getElementById('cnt-test').innerText = c.test;
-            document.getElementById('cnt-awat').innerText = c.awat;
+            ['all','comp','fact','test','awat'].forEach(k => document.getElementById('cnt-'+k).innerText = c[k]);
         }
-
-        function setView(v, el) {
-            CURRENT_VIEW = v;
-            document.getElementById('view-title').innerText = v;
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            el.classList.add('active');
-            renderTable();
-        }
-
+        function setView(v, el) { CURRENT_VIEW = v; document.getElementById('view-title').innerText = v; document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); renderTable(); }
         function logout() { localStorage.clear(); location.reload(); }
+        window.onclick = () => closeFilter();
+        document.getElementById('filter-popover').onclick = e => e.stopPropagation();
     </script>
 </body>
 </html>

@@ -6,16 +6,22 @@
     <title>FAST | ECS Asbestos</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root { --ecs-orange: #D4631E; --ecs-dark: #1F2937; }
-        body { font-family: 'Inter', sans-serif; margin: 0; background: #F3F4F6; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        :root { --ecs-orange: #D4631E; --ecs-dark: #1F2937; --border: #E5E7EB; }
+        body { font-family: 'Inter', sans-serif; margin: 0; background: #F3F4F6; height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
         
-        .login-card { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 320px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        .btn-login { width: 100%; padding: 14px; background: var(--ecs-orange); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 10px; }
+        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .login-card { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 340px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn-login { width: 100%; padding: 14px; background: var(--ecs-orange); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 15px; }
         
-        #dashboard { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; overflow-y: auto; }
+        #dashboard { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; display: flex; flex-direction: column; }
         .nav-bar { background: var(--ecs-dark); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .table-container { flex: 1; overflow: auto; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; }
+        th { background: #f9fafb; padding: 12px; border-bottom: 2px solid var(--border); position: sticky; top: 0; }
+        td { padding: 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+        tr:hover { background: #fffaf7; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -23,11 +29,9 @@
     <div id="login-screen">
         <div class="login-card">
             <h1 style="font-family: Montserrat; letter-spacing: 4px;">F<span style="color:var(--ecs-orange)">A</span>ST</h1>
-            <p style="color: #6B7280; font-size: 14px; margin-bottom: 20px;">System Login</p>
-            
-            <input type="text" id="username" placeholder="Username">
-            <input type="password" id="password" placeholder="Password">
-            
+            <p style="color: #6B7280; font-size: 13px; margin-bottom: 25px;">Internal Management Login</p>
+            <input type="text" id="user" placeholder="Username">
+            <input type="password" id="pass" placeholder="Password">
             <button class="btn-login" onclick="handleLogin()">Login</button>
             <p id="msg" style="color: #EF4444; font-size: 12px; margin-top: 15px;"></p>
         </div>
@@ -35,47 +39,63 @@
 
     <div id="dashboard" class="hidden">
         <nav class="nav-bar">
-            <div style="font-family: Montserrat; font-weight: 700;">F<span style="color:var(--ecs-orange)">A</span>ST</div>
-            <button onclick="logout()" style="background:none; border:1px solid white; color:white; padding:5px 10px; border-radius:4px; cursor:pointer;">Logout</button>
+            <div style="font-family: Montserrat; font-weight: 700; letter-spacing: 2px;">F<span style="color:var(--ecs-orange)">A</span>ST</div>
+            <button onclick="logout()" style="background:none; border:1px solid rgba(255,255,255,0.3); color:white; padding:6px 15px; border-radius:6px; cursor:pointer;">Logout</button>
         </nav>
-        <div style="padding: 30px;">
-            <h2>Project Dashboard</h2>
-            <div id="data-output">Loading data...</div>
+        <div class="table-container">
+            <div id="table-output">Loading project data...</div>
         </div>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzVYrXr-8qJwV2m2oR2SMFIsfd-otL528yhnLMOOWA_3ZgUhtNZeMJmqoQcHMCZpHheLw/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzW7o6bLmvXZfN8uvo2NwJLbYE4FSOKAFjLJwc4sZeIw38xqRr7KwVebmk51kCnV-uJVA/exec";
 
         async function handleLogin() {
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
+            const user = document.getElementById('user').value;
+            const pass = document.getElementById('pass').value;
             const msg = document.getElementById('msg');
             
+            if(!user || !pass) { msg.innerText = "Enter credentials"; return; }
             msg.innerText = "Verifying...";
             
             try {
-                const response = await fetch(`${SCRIPT_URL}?action=verify_login&user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`);
-                const result = await response.json();
+                const res = await fetch(`${SCRIPT_URL}?action=verify_login&user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`);
+                const data = await res.json();
                 
-                if (result.result === "success") {
-                    localStorage.setItem("fast_session", "active");
-                    showDashboard();
+                if (data.result === "success") {
+                    localStorage.setItem("fast_auth", "true");
+                    loadDashboard();
                 } else {
-                    msg.innerText = "Invalid Username or Password";
+                    msg.innerText = "Invalid credentials";
                 }
-            } catch (e) {
-                msg.innerText = "Connection Error";
-            }
+            } catch (e) { msg.innerText = "Connection failed"; }
         }
 
-        function showDashboard() {
+        async function loadDashboard() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
+            
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=sync_data`);
+                const json = await res.json();
+                if(json.result === "success") renderTable(json.headers, json.rows);
+            } catch(e) { document.getElementById('table-output').innerText = "Sync failed."; }
+        }
+
+        function renderTable(headers, rows) {
+            let html = `<table><thead><tr>`;
+            headers.forEach(h => html += `<th>${h}</th>`);
+            html += `</tr></thead><tbody>`;
+            rows.forEach(row => {
+                html += `<tr>`;
+                row.forEach(cell => html += `<td>${cell || ''}</td>`);
+                html += `</tr>`;
+            });
+            document.getElementById('table-output').innerHTML = html + `</tbody></table>`;
         }
 
         function logout() { localStorage.clear(); location.reload(); }
-        window.onload = () => { if(localStorage.getItem("fast_session") === "active") showDashboard(); };
+        window.onload = () => { if(localStorage.getItem("fast_auth") === "true") loadDashboard(); };
     </script>
 </body>
 </html>

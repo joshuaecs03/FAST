@@ -178,4 +178,156 @@
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=sync_surgical&hashes=${encodeURIComponent(JSON.stringify(ROW_HASHES))}`);
                 const json = await res.json();
-                if (json.result === "
+                if (json.result === "success") {
+                    HEADERS = json.headers;
+                    localStorage.setItem('fast_headers_cache', JSON.stringify(HEADERS));
+                    if (json.updates && json.updates.length > 0) {
+                        const fIdx = HEADERS.indexOf("File Number");
+                        json.updates.forEach(up => {
+                            const exIdx = UI_CACHE.findIndex(r => String(r[fIdx]) === String(up.id));
+                            if(exIdx !== -1) UI_CACHE[exIdx] = up.data; else UI_CACHE.unshift(up.data);
+                            ROW_HASHES[up.id] = up.hash;
+                        });
+                        localStorage.setItem('fast_data_cache', JSON.stringify(UI_CACHE));
+                        localStorage.setItem('fast_hash_cache', JSON.stringify(ROW_HASHES));
+                        renderTable();
+                    }
+                    document.getElementById('sync-status').innerText = "✓ " + UI_CACHE.length;
+                }
+            } catch (e) {}
+        }
+
+        function renderTable() {
+            if (!HEADERS.length) return;
+            const sIdx = HEADERS.indexOf("Status");
+            const q = document.getElementById("searchBar").value.toUpperCase();
+            let filtered = UI_CACHE.filter(r => {
+                const matchesView = (CURRENT_VIEW === 'All Jobs' || String(r[sIdx]) === CURRENT_VIEW);
+                const matchesSearch = r.join(" ").toUpperCase().includes(q);
+                let matchesFilters = true;
+                for (let col in ACTIVE_FILTERS) {
+                    if (!ACTIVE_FILTERS[col].includes(String(r[HEADERS.indexOf(col)] || ''))) { matchesFilters = false; break; }
+                }
+                return matchesView && matchesSearch && matchesFilters;
+            });
+
+            let html = `<table><thead><tr>`;
+            ACTIVE_COLS.forEach(c => {
+                const width = COL_WIDTHS[c] || 150;
+                const filterClass = ACTIVE_FILTERS[c] ? 'filter-active' : '';
+                html += `<th style="width:${width}px;" data-col="${c}" class="${filterClass}">
+                    <div class="th-content"><span>${c}</span><span class="filter-trigger" onclick="openFilter(event, '${c}')">▼</span></div>
+                    <div class="resizer"></div>
+                </th>`;
+            });
+            html += `</tr></thead><tbody>`;
+            filtered.forEach(r => {
+                html += `<tr>`;
+                ACTIVE_COLS.forEach(c => {
+                    const idx = HEADERS.indexOf(c);
+                    html += `<td>${idx !== -1 ? (r[idx] || '') : ''}</td>`;
+                });
+                html += `</tr>`;
+            });
+            document.getElementById('table-output').innerHTML = html + `</tbody></table>`;
+            initResizers(); updateCounts();
+        }
+
+        function initResizers() {
+            document.querySelectorAll('.resizer').forEach(resizer => {
+                resizer.addEventListener('mousedown', (e) => {
+                    const th = resizer.parentElement;
+                    const colName = th.dataset.col;
+                    const startX = e.pageX, startWidth = th.offsetWidth;
+                    resizer.classList.add('resizing');
+                    const move = (ev) => {
+                        const w = Math.max(50, startWidth + (ev.pageX - startX));
+                        th.style.width = w + 'px';
+                        COL_WIDTHS[colName] = w;
+                    };
+                    const up = () => {
+                        resizer.classList.remove('resizing');
+                        localStorage.setItem('fast_col_widths', JSON.stringify(COL_WIDTHS));
+                        document.removeEventListener('mousemove', move);
+                        document.removeEventListener('mouseup', up);
+                    };
+                    document.addEventListener('mousemove', move);
+                    document.addEventListener('mouseup', up);
+                });
+            });
+        }
+
+        // --- Filtering ---
+        function openFilter(event, col) {
+            event.stopPropagation(); CURRENT_FILTER_COL = col;
+            const pop = document.getElementById('filter-popover');
+            pop.style.display = 'block'; pop.style.top = (event.clientY + 5) + 'px'; pop.style.left = (event.clientX - 100) + 'px';
+            document.getElementById('filter-search').value = '';
+            refreshFilterList();
+        }
+        function closeFilter() { document.getElementById('filter-popover').style.display = 'none'; }
+        function refreshFilterList() {
+            const idx = HEADERS.indexOf(CURRENT_FILTER_COL);
+            const q = document.getElementById('filter-search').value.toLowerCase();
+            const vals = [...new Set(UI_CACHE.map(r => String(r[idx] || '')))].sort();
+            let h = '';
+            vals.filter(v => v.toLowerCase().includes(q)).forEach(v => {
+                const checked = (!ACTIVE_FILTERS[CURRENT_FILTER_COL] || ACTIVE_FILTERS[CURRENT_FILTER_COL].includes(v)) ? 'checked' : '';
+                h += `<div class="filter-item" onclick="this.querySelector('input').click(); event.stopPropagation();"><input type="checkbox" value="${v}" ${checked} onclick="event.stopPropagation();"><span>${v || '(Blanks)'}</span></div>`;
+            });
+            document.getElementById('filter-list').innerHTML = h;
+        }
+        function toggleAllFilter(checked) { document.querySelectorAll('#filter-list input').forEach(i => i.checked = checked); }
+        function applyFilter() {
+            const sel = []; document.querySelectorAll('#filter-list input:checked').forEach(i => sel.push(i.value));
+            ACTIVE_FILTERS[CURRENT_FILTER_COL] = sel; closeFilter(); renderTable();
+        }
+        function clearFilter() { delete ACTIVE_FILTERS[CURRENT_FILTER_COL]; closeFilter(); renderTable(); }
+
+        // --- Surgical Column Manager ---
+        function toggleColModal() {
+            const m = document.getElementById('col-modal');
+            m.classList.toggle('hidden');
+            if(!m.classList.contains('hidden')) { document.getElementById('modal-col-search').value = ''; initModalList(); }
+        }
+        function initModalList() {
+            const container = document.getElementById('col-list-container'), all = HEADERS.length ? HEADERS : ACTIVE_COLS, order = [...ACTIVE_COLS];
+            all.forEach(h => { if(!order.includes(h)) order.push(h); });
+            container.innerHTML = '';
+            order.forEach(c => {
+                const div = document.createElement('div'); div.className = 'col-item'; div.dataset.id = c;
+                div.innerHTML = `<input type="checkbox" class="col-check" ${ACTIVE_COLS.includes(c)?'checked':''}> <span>${c}</span> <span class="drag-icon">⋮⋮</span>`;
+                container.appendChild(div);
+            });
+            new Sortable(container, { animation: 150, handle: '.drag-icon', ghostClass: 'hidden' });
+        }
+        function filterModalCols() {
+            const q = document.getElementById('modal-col-search').value.toLowerCase();
+            document.querySelectorAll('.col-item').forEach(i => i.style.display = i.querySelector('span').innerText.toLowerCase().includes(q) ? 'grid' : 'none');
+        }
+        function toggleAllCols(checked) { document.querySelectorAll('.col-check').forEach(c => c.checked = checked); }
+        function saveColumnConfig() {
+            const active = []; document.querySelectorAll('.col-item').forEach(i => { if(i.querySelector('.col-check').checked) active.push(i.dataset.id); });
+            ACTIVE_COLS = active; localStorage.setItem('fast_active_cols', JSON.stringify(ACTIVE_COLS));
+            renderTable(); toggleColModal();
+        }
+
+        function updateCounts() {
+            const sIdx = HEADERS.indexOf("Status"); if(sIdx === -1) return;
+            const c = { all: UI_CACHE.length, comp: 0, fact: 0, test: 0, awat: 0 };
+            UI_CACHE.forEach(r => {
+                const s = String(r[sIdx]);
+                if(s === "Completed Jobs") c.comp++;
+                else if(s === "Completed Job - Factored") c.fact++;
+                else if(s === "Testing Only Invoicing") c.test++;
+                else if(s === "Project Awaiting Approval") c.awat++;
+            });
+            ['all','comp','fact','test','awat'].forEach(k => document.getElementById('cnt-'+k).innerText = c[k]);
+        }
+        function setView(v, el) { CURRENT_VIEW = v; document.getElementById('view-title').innerText = v; document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); renderTable(); }
+        function logout() { localStorage.clear(); location.reload(); }
+        window.onclick = () => closeFilter();
+        document.getElementById('filter-popover').onclick = e => e.stopPropagation();
+    </script>
+</body>
+</html>

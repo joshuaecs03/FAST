@@ -11,7 +11,7 @@
         body { font-family: 'Inter', sans-serif; margin: 0; background: var(--ecs-bg); color: var(--ecs-dark); height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
 
-        /* Original FAST Branded Login */
+        /* FAST Branded Login */
         #login-screen { text-align: center; padding-top: 15vh; height: 100vh; background: var(--ecs-bg); }
         .login-brand { font-family: 'Montserrat', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 8px; font-size: 3.5rem; color: #000; margin-bottom: 30px; }
         .login-brand span { color: var(--ecs-orange); }
@@ -19,7 +19,7 @@
         input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 14px; }
         #login-btn { width: 100%; padding: 16px; background: var(--ecs-orange); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; text-transform: uppercase; }
 
-        /* Dashboard & Sidebar */
+        /* Sidebar & Navigation */
         #dashboard { display: flex; height: 100vh; }
         #sidebar { width: var(--sidebar-width); background: #1F2937; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-header { padding: 25px; border-bottom: 1px solid #374151; }
@@ -30,7 +30,7 @@
         .nav-item.active { background: #111827; color: white; border-left: 4px solid var(--ecs-orange); font-weight: 600; }
         .nav-count { font-size: 10px; background: #374151; color: #9CA3AF; padding: 2px 8px; border-radius: 10px; }
 
-        /* Content Area */
+        /* Main Content */
         #main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: white; }
         header { background: white; padding: 0 30px; height: 70px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
         .controls-area { padding: 12px 30px; border-bottom: 1px solid var(--ecs-border); display: flex; align-items: center; gap: 15px; }
@@ -70,7 +70,7 @@
         <main id="main-content">
             <header><h2 id="view-title" style="margin:0; font-size:1.1rem; font-weight: 600;">All Jobs</h2><div id="sync-status" style="font-size:11px; color:#9CA3AF;">Syncing...</div></header>
             <div class="controls-area">
-                <input type="text" id="searchBar" oninput="renderTable()" placeholder="Search through all columns...">
+                <input type="text" id="searchBar" oninput="renderTable()" placeholder="Search data...">
             </div>
             <div class="table-wrapper" id="table-output"></div>
         </main>
@@ -82,7 +82,7 @@
         let UI_CACHE = JSON.parse(localStorage.getItem('fast_data_cache') || "[]");
         let ROW_HASHES = JSON.parse(localStorage.getItem('fast_hash_cache') || "{}");
         let HEADERS = JSON.parse(localStorage.getItem('fast_headers_cache') || "[]");
-        let COLUMN_DEFS = [], CURRENT_VIEW = 'All Jobs';
+        let CURRENT_VIEW = 'All Jobs';
 
         const DEFAULT_COLS = ["File Number", "File Name", "Status", "Customer Name", "Insurance Company", "Total Invoice"];
 

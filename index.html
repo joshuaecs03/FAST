@@ -11,15 +11,15 @@
         body { font-family: 'Inter', sans-serif; margin: 0; background: var(--ecs-bg); color: var(--ecs-dark); height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
 
-        /* BOLD LOGIN BRANDING */
+        /* --- BOLD LOGIN BRANDING --- */
         #login-screen { text-align: center; padding-top: 15vh; height: 100vh; background: var(--ecs-bg); }
         .login-brand { font-family: 'Montserrat', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 8px; font-size: 3.5rem; color: #000; margin-bottom: 30px; }
         .login-brand span { color: var(--ecs-orange); }
         .login-card { width: 360px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 14px; }
+        .login-card input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 14px; }
         #login-btn { width: 100%; padding: 16px; background: var(--ecs-orange); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; text-transform: uppercase; }
 
-        /* DASHBOARD & SIDEBAR */
+        /* --- DASHBOARD & SIDEBAR --- */
         #dashboard { display: flex; height: 100vh; }
         #sidebar { width: var(--sidebar-width); background: #1F2937; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-header { padding: 25px; border-bottom: 1px solid #374151; }
@@ -30,7 +30,7 @@
         .nav-item.active { background: #111827; color: white; border-left: 4px solid var(--ecs-orange); font-weight: 600; }
         .nav-count { font-size: 10px; background: #374151; color: #9CA3AF; padding: 2px 8px; border-radius: 10px; }
 
-        /* MAIN CONTENT & TIGHT TABLE */
+        /* --- MAIN TABLE AREA --- */
         #main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: white; }
         header { background: white; padding: 0 30px; height: 60px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
         .controls-area { padding: 10px 30px; border-bottom: 1px solid var(--ecs-border); display: flex; align-items: center; gap: 12px; }
@@ -40,33 +40,41 @@
         .table-wrapper { flex: 1; overflow: auto; margin: 15px; border: 1px solid var(--ecs-border); border-radius: 6px; position: relative; }
         table { border-collapse: separate; border-spacing: 0; font-size: 11px; width: auto; table-layout: fixed; }
         th { background: #F9FAFB; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--ecs-border); border-right: 1px solid #eee; text-align: left; padding: 0; color: #6B7280; font-weight: 700; text-transform: uppercase; user-select: none; }
-        .th-content { padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; overflow: hidden; }
+        .th-content { padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; }
         .resizer { width: 4px; position: absolute; right: 0; top: 0; bottom: 0; cursor: col-resize; background: transparent; }
         .resizer:hover, .resizing { background: var(--ecs-orange); }
         td { padding: 6px 10px; border-bottom: 1px solid #f3f4f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-right: 1px solid #f9f9f9; color: #374151; }
         tr:hover td { background-color: #FFF9F5; }
 
-        /* CLEAN FILTER POPOVER */
-        .filter-popover { position: fixed; background: white; border: 1px solid #bbb; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 110; width: 165px; display: none; }
+        /* --- CLEAN FILTER POPOVER --- */
+        .filter-popover { position: fixed; background: white; border: 1px solid #bbb; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 110; width: 160px; display: none; }
         .filter-header { padding: 6px 8px; background: #f3f4f6; border-bottom: 1px solid #ddd; font-weight: 700; font-size: 10px; display: flex; justify-content: space-between; color: #4B5563; text-transform: uppercase; }
-        .filter-search-container { padding: 5px; border-bottom: 1px solid #eee; }
+        .filter-search-container { padding: 5px; }
         .filter-search-container input { padding: 4px 6px; border: 1px solid #ddd; border-radius: 3px; font-size: 11px; width: 100%; box-sizing: border-box; outline: none; }
-        .filter-list { max-height: 140px; overflow-y: auto; padding: 2px 0; }
+        .filter-list { max-height: 140px; overflow-y: auto; padding: 2px 0; border-top: 1px solid #eee; }
         .filter-item { display: grid; grid-template-columns: 20px 1fr; align-items: center; padding: 3px 8px; cursor: pointer; font-size: 11px; }
         .filter-item:hover { background: #f0f7ff; }
         .filter-item input { margin: 0; transform: scale(0.8); }
         .filter-footer { padding: 6px 8px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 5px; background: #fafafa; }
         .filter-btn-ok { background: var(--ecs-orange); color: white; border: none; padding: 3px 10px; border-radius: 3px; font-size: 10px; cursor: pointer; font-weight: 600; }
 
-        /* CLEAN UNIFORM COLUMN MODAL */
+        /* --- CLEAN UNIFORM COLUMN MODAL --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
-        .modal-card { background: white; width: 320px; max-height: 80vh; border-radius: 10px; display: flex; flex-direction: column; border: 1px solid #d1d5db; }
-        .modal-header { padding: 12px 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-        .modal-header span { font-weight: 700; font-size: 13px; }
-        .col-item { display: grid; grid-template-columns: 24px 1fr 20px; align-items: center; padding: 6px 8px; border-radius: 4px; margin-bottom: 2px; cursor: grab; background: #fff; }
-        .col-item:hover { background: #f9fafb; border: 1px solid #eee; padding: 5px 7px; }
-        .col-item span { font-size: 11px; color: #374151; font-weight: 500; }
-        .drag-icon { color: #d1d5db; font-size: 12px; text-align: right; }
+        .modal-card { background: white; width: 320px; max-height: 80vh; border-radius: 10px; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #d1d5db; overflow: hidden; }
+        .modal-header { padding: 12px 16px; border-bottom: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header span { font-weight: 700; font-size: 13px; color: #111827; }
+        .modal-header button { font-size: 10px; color: #2563eb; background: none; border: none; cursor: pointer; font-weight: 600; padding: 0; }
+        .modal-search-container { padding: 10px 16px; border-bottom: 1px solid #f3f4f6; }
+        .modal-search-container input { padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 12px; width: 100%; box-sizing: border-box; outline: none; background: #f9fafb; }
+        .modal-body { padding: 8px 12px; overflow-y: auto; flex: 1; }
+        
+        .col-item { display: grid; grid-template-columns: 30px 1fr 30px; align-items: center; padding: 8px 0; border-radius: 6px; margin-bottom: 2px; cursor: grab; background: #fff; }
+        .col-item:hover { background: #f3f4f6; }
+        .col-item input { justify-self: center; margin: 0; cursor: pointer; }
+        .col-item span { font-size: 12px; color: #374151; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .drag-icon { justify-self: center; color: #cbd5e1; font-size: 14px; user-select: none; }
+        .modal-footer { padding: 12px 16px; border-top: 1px solid #f3f4f6; display: flex; justify-content: flex-end; gap: 10px; background: #fcfcfc; }
+        .btn-apply { background: var(--ecs-orange); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -103,7 +111,7 @@
     </div>
 
     <div id="filter-popover" class="filter-popover">
-        <div class="filter-header"><span id="filter-title">Filter</span><button onclick="closeFilter()" style="border:none; background:none; cursor:pointer;">&times;</button></div>
+        <div class="filter-header"><span>Filter</span><button onclick="closeFilter()">&times;</button></div>
         <div class="filter-search-container"><input type="text" id="filter-search" placeholder="Search..." oninput="refreshFilterList()"></div>
         <div style="padding: 2px 8px; display: flex; gap: 8px;"><button onclick="toggleAllFilter(true)" style="font-size:9px; color:#2563eb; border:none; background:none; cursor:pointer;">All</button><button onclick="toggleAllFilter(false)" style="font-size:9px; color:#2563eb; border:none; background:none; cursor:pointer;">None</button></div>
         <div id="filter-list" class="filter-list"></div>
@@ -114,23 +122,21 @@
         <div class="modal-card">
             <div class="modal-header">
                 <span>Column Visibility</span>
-                <div style="display:flex; gap:10px;"><button onclick="toggleAllCols(true)" style="font-size:10px; color:#2563eb; border:none; background:none; cursor:pointer;">All</button><button onclick="toggleAllCols(false)" style="font-size:10px; color:#2563eb; border:none; background:none; cursor:pointer;">None</button></div>
+                <div style="display:flex; gap:10px;"><button onclick="toggleAllCols(true)">Select All</button><button onclick="toggleAllCols(false)">None</button></div>
             </div>
-            <div style="padding:8px 12px; border-bottom:1px solid #f3f4f6;"><input type="text" id="modal-col-search" placeholder="Search columns..." oninput="filterModalCols()" style="margin-bottom:0; font-size:11px; padding:6px; width:100%; box-sizing:border-box; border:1px solid #ddd; border-radius:4px;"></div>
-            <div class="modal-body" id="col-list-container" style="padding:8px 12px; overflow-y:auto; flex:1;"></div>
-            <div style="padding:12px; border-top:1px solid #eee; display:flex; justify-content:flex-end; gap:8px;">
+            <div class="modal-search-container"><input type="text" id="modal-col-search" placeholder="Search columns..." oninput="filterModalCols()"></div>
+            <div class="modal-body" id="col-list-container"></div>
+            <div class="modal-footer">
                 <button onclick="toggleColModal()" style="font-size:11px; border:none; background:none; cursor:pointer; color:#6B7280;">Cancel</button>
-                <button onclick="saveColumnConfig()" style="background:var(--ecs-orange); color:white; border:none; padding:6px 14px; border-radius:4px; font-size:11px; font-weight:700; cursor:pointer;">Apply Globally</button>
+                <button onclick="saveColumnConfig()" class="btn-apply">Save Changes Globally</button>
             </div>
         </div>
     </div>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw03qwvQXRxh1fzuiGTrngVraBGETG-OVFS81dww9Mboe21Ddk3htTGqDJy3xLeHvMpbQ/exec";
-        
         let UI_CACHE = [], HEADERS = [], ROW_HASHES = {};
         let CURRENT_VIEW = 'All Jobs', CURRENT_FILTER_COL = null, ACTIVE_FILTERS = {}; 
-        
         let ACTIVE_COLS = JSON.parse(localStorage.getItem('fast_active_cols')) || ["File Number", "File Name", "Status", "Customer Name", "Insurance Company", "Total Invoice"];
         let COL_WIDTHS = JSON.parse(localStorage.getItem('fast_col_widths')) || {};
 
@@ -144,7 +150,7 @@
                 const data = await res.json();
                 if(data.result === "success") { localStorage.setItem("fast_active", "true"); showDashboard(); } 
                 else alert(data.reason);
-            } catch (e) { alert("Connection Error."); }
+            } catch (e) { alert("Error connecting."); }
         }
 
         function showDashboard() {
@@ -185,7 +191,6 @@
             if (!HEADERS.length) return;
             const sIdx = HEADERS.indexOf("Status");
             const q = document.getElementById("searchBar").value.toUpperCase();
-            
             let filtered = UI_CACHE.filter(r => {
                 const matchesView = (CURRENT_VIEW === 'All Jobs' || String(r[sIdx]) === CURRENT_VIEW);
                 const matchesSearch = r.join(" ").toUpperCase().includes(q);
@@ -199,14 +204,13 @@
             let html = `<table><thead><tr>`;
             ACTIVE_COLS.forEach(c => {
                 const width = COL_WIDTHS[c] || 150;
-                const isFiltered = ACTIVE_FILTERS[c] ? 'filter-active' : '';
-                html += `<th style="width:${width}px;" data-col="${c}" class="${isFiltered}">
+                const filterClass = ACTIVE_FILTERS[c] ? 'filter-active' : '';
+                html += `<th style="width:${width}px;" data-col="${c}" class="${filterClass}">
                     <div class="th-content"><span>${c}</span><span class="filter-trigger" onclick="openFilter(event, '${c}')">▼</span></div>
                     <div class="resizer"></div>
                 </th>`;
             });
             html += `</tr></thead><tbody>`;
-            
             filtered.forEach(r => {
                 html += `<tr>`;
                 ACTIVE_COLS.forEach(c => {
@@ -224,7 +228,7 @@
             document.getElementById('view-title').innerText = v;
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             el.classList.add('active');
-            renderTable(); // Triggers global render
+            renderTable(); 
         }
 
         function initResizers() {
@@ -251,7 +255,6 @@
             });
         }
 
-        // --- FILTERING ---
         function openFilter(e, col) {
             e.stopPropagation(); CURRENT_FILTER_COL = col;
             const pop = document.getElementById('filter-popover');
@@ -278,7 +281,6 @@
         }
         function clearFilter() { delete ACTIVE_FILTERS[CURRENT_FILTER_COL]; closeFilter(); renderTable(); }
 
-        // --- UNIFORM COLUMN MANAGER ---
         function toggleColModal() {
             const m = document.getElementById('col-modal');
             m.classList.toggle('hidden');

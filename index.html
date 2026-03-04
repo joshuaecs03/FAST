@@ -35,11 +35,34 @@
         .col-item { display: flex; align-items: center; gap: 12px; padding: 8px; font-size: 12px; cursor: move; border-radius: 6px; }
         .col-item:hover { background: #f3f4f6; }
 
+        /* THE "NO-WRAP" EXCEL LAYOUT */
         .table-wrapper { flex: 1; overflow: auto; margin: 20px; border: 1px solid var(--ecs-border); border-radius: 8px; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 11px; }
-        th { background: #F9FAFB; padding: 16px; position: sticky; top: 0; text-align: left; z-index: 10; border-bottom: 2px solid var(--ecs-border); }
+        table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; font-size: 11px; table-layout: auto; } 
+        
+        th { 
+            background: #F9FAFB; 
+            padding: 14px 20px; 
+            position: sticky; 
+            top: 0; 
+            text-align: left; 
+            z-index: 10; 
+            border-bottom: 2px solid var(--ecs-border); 
+            white-space: nowrap; 
+        }
+
         .header-label { font-size: 10px; color: #6B7280; text-transform: uppercase; font-weight: 700; cursor: pointer; }
-        td { padding: 14px 16px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; color: #374151; }
+        
+        td { 
+            padding: 12px 20px; 
+            border-bottom: 1px solid var(--ecs-border); 
+            color: #374151; 
+            /* Strict single line logic */
+            white-space: nowrap; 
+            overflow: hidden;
+            text-overflow: ellipsis; 
+            max-width: 400px; /* Limits massive text fields while staying on one line */
+        }
+
         tr:hover td { background-color: #FFF9F5; }
     </style>
 </head>
@@ -70,11 +93,10 @@
             <header><h2 id="view-title" style="margin:0;">All Jobs</h2><div id="sync-status" style="font-size:11px; color:#9CA3AF;">Syncing...</div></header>
             
             <div class="controls-area">
-                <input type="text" id="searchBar" oninput="instantSearch()" placeholder="Search by name, file #, address, or referral...">
+                <input type="text" id="searchBar" oninput="instantSearch()" placeholder="Search data...">
                 <div class="col-manager">
                     <button id="col-btn" onclick="toggleColMenu()">⚙ Columns</button>
                     <div id="col-dropdown" class="col-dropdown hidden">
-                        <div style="font-size: 11px; color: #6b7280; padding: 5px 10px; border-bottom: 1px solid #eee; margin-bottom: 5px;">Drag to reorder / Check to show</div>
                         <div id="col-list"></div>
                     </div>
                 </div>
@@ -86,24 +108,9 @@
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyoO-wu2p2j463ePFB5kW59yv45-hxBo7gV8EK0hqbV5t5q1MVn2K8nvWIOFmk4Q0OxSA/exec";
-        
-        let UI_CACHE = [], HEADERS = [], ROW_HASHES = {}, CURRENT_VIEW = 'All Jobs';
-        let COLUMN_DEFS = []; 
-        let SORT_COL = null, SORT_ASC = true;
+        let UI_CACHE = [], HEADERS = [], ROW_HASHES = {}, CURRENT_VIEW = 'All Jobs', COLUMN_DEFS = [], SORT_COL = null, SORT_ASC = true;
 
-        // FIXED: Your new exact default column list
-        const DEFAULT_VISIBLE = [
-            "File Number", 
-            "File Name", 
-            "Claim Number", 
-            "Status", 
-            "Customer Name", 
-            "Loss Address", 
-            "State", 
-            "Insurance Company", 
-            "Referred By", 
-            "Referred By Organization Name"
-        ];
+        const DEFAULT_VISIBLE = ["File Number", "File Name", "Claim Number", "Status", "Customer Name", "Loss Address", "State", "Insurance Company", "Referred By", "Referred By Organization Name"];
 
         window.onload = () => { if (localStorage.getItem("fast_active") === "true") init(); };
 
@@ -111,8 +118,7 @@
             const u = document.getElementById('u').value, p = document.getElementById('p').value;
             const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
             const data = await res.json();
-            if(data.result === "success") { localStorage.setItem("fast_active", "true"); init(); }
-            else alert("Denied");
+            if(data.result === "success") { localStorage.setItem("fast_active", "true"); init(); } else alert("Denied");
         }
 
         async function init() {
@@ -127,65 +133,55 @@
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=sync_surgical&hashes=${encodeURIComponent(JSON.stringify(ROW_HASHES))}`);
                 const json = await res.json();
-                
                 if (json.result === "success" && json.updates.length > 0) {
-                    if (HEADERS.length === 0) {
-                        HEADERS = json.headers;
-                        COLUMN_DEFS = HEADERS.map(h => ({ 
-                            name: h, 
-                            visible: DEFAULT_VISIBLE.includes(h) 
-                        }));
-                        renderColMenu();
-                    }
+                    if (HEADERS.length === 0) { HEADERS = json.headers; loadColumnSettings(); renderColMenu(); }
                     const fNumIdx = HEADERS.indexOf("File Number");
                     json.updates.forEach(up => {
                         const fNum = up.data[fNumIdx].toString();
                         const exIdx = UI_CACHE.findIndex(r => r[fNumIdx].toString() === fNum);
-                        if(exIdx !== -1) UI_CACHE[exIdx] = up.data;
-                        else UI_CACHE.unshift(up.data);
+                        if(exIdx !== -1) UI_CACHE[exIdx] = up.data; else UI_CACHE.unshift(up.data);
                         ROW_HASHES[fNum] = up.hash;
                     });
                     renderTable();
                     updateCounts();
                 }
-
-                if (UI_CACHE.length > 0) {
-                    document.getElementById('sync-status').innerText = "✓ Live: " + new Date().toLocaleTimeString();
-                } else {
-                    document.getElementById('sync-status').innerText = "Connecting to Sheet...";
-                }
+                document.getElementById('sync-status').innerText = UI_CACHE.length > 0 ? "✓ Live: " + new Date().toLocaleTimeString() : "Syncing...";
             } catch (e) { document.getElementById('sync-status').innerText = "⚠ Reconnecting..."; }
+        }
+
+        function loadColumnSettings() {
+            const saved = localStorage.getItem('fast_column_layout');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                COLUMN_DEFS = parsed.filter(p => HEADERS.includes(p.name));
+                HEADERS.forEach(h => { if (!COLUMN_DEFS.find(c => c.name === h)) COLUMN_DEFS.push({ name: h, visible: DEFAULT_VISIBLE.includes(h) }); });
+            } else {
+                COLUMN_DEFS = HEADERS.map(h => ({ name: h, visible: DEFAULT_VISIBLE.includes(h) }));
+            }
         }
 
         function renderTable() {
             const visibleDefs = COLUMN_DEFS.filter(d => d.visible);
             const statusIdx = HEADERS.indexOf("Status");
-            const globalQ = document.getElementById("searchBar").value.toUpperCase();
+            const q = document.getElementById("searchBar").value.toUpperCase();
 
-            let filtered = UI_CACHE.filter(row => {
-                const matchesView = (CURRENT_VIEW === 'All Jobs' || row[statusIdx] === CURRENT_VIEW);
-                const matchesGlobal = row.join(" ").toUpperCase().includes(globalQ);
-                return matchesView && matchesGlobal;
-            });
+            let filtered = UI_CACHE.filter(row => (CURRENT_VIEW === 'All Jobs' || row[statusIdx] === CURRENT_VIEW) && row.join(" ").toUpperCase().includes(q));
 
             if (SORT_COL) {
                 const sIdx = HEADERS.indexOf(SORT_COL);
-                filtered.sort((a,b) => {
-                    let vA = (a[sIdx] || '').toString(), vB = (b[sIdx] || '').toString();
-                    return SORT_ASC ? vA.localeCompare(vB) : vB.localeCompare(vA);
-                });
+                filtered.sort((a,b) => (a[sIdx] || '').toString().localeCompare((b[sIdx] || '').toString()) * (SORT_ASC ? 1 : -1));
             }
 
             let html = `<table><thead><tr>`;
-            visibleDefs.forEach(def => {
-                html += `<th>
-                    <span class="header-label" onclick="handleSort('${def.name}')">${def.name} ${SORT_COL === def.name ? (SORT_ASC ? '▲' : '▼') : ''}</span>
-                </th>`;
-            });
+            visibleDefs.forEach(def => html += `<th><span class="header-label" onclick="handleSort('${def.name}')">${def.name} ${SORT_COL === def.name ? (SORT_ASC ? '▲' : '▼') : ''}</span></th>`);
             html += `</tr></thead><tbody>`;
+            
             filtered.forEach(r => {
                 html += `<tr>`;
-                visibleDefs.forEach(def => html += `<td>${r[HEADERS.indexOf(def.name)] || ''}</td>`);
+                visibleDefs.forEach(def => {
+                    const idx = HEADERS.indexOf(def.name);
+                    html += `<td>${r[idx] || ''}</td>`;
+                });
                 html += `</tr>`;
             });
             document.getElementById('table-output').innerHTML = html + `</tbody></table>`;
@@ -193,32 +189,24 @@
 
         function renderColMenu() {
             let html = '';
-            COLUMN_DEFS.forEach((def, i) => {
-                html += `<div class="col-item" data-id="${i}">
-                    <input type="checkbox" ${def.visible ? 'checked' : ''} onchange="toggleVisible(${i})">
-                    <span>${def.name}</span>
-                </div>`;
-            });
+            COLUMN_DEFS.forEach((def, i) => html += `<div class="col-item" data-id="${i}"><input type="checkbox" ${def.visible ? 'checked' : ''} onchange="toggleVisible(${i})"><span>${def.name}</span></div>`);
             document.getElementById('col-list').innerHTML = html;
         }
 
         function initSortable() {
-            new Sortable(document.getElementById('col-list'), {
-                animation: 150,
-                onEnd: (evt) => {
-                    const movedItem = COLUMN_DEFS.splice(evt.oldIndex, 1)[0];
-                    COLUMN_DEFS.splice(evt.newIndex, 0, movedItem);
-                    renderTable();
-                }
-            });
+            new Sortable(document.getElementById('col-list'), { animation: 150, onEnd: (evt) => {
+                const moved = COLUMN_DEFS.splice(evt.oldIndex, 1)[0];
+                COLUMN_DEFS.splice(evt.newIndex, 0, moved);
+                localStorage.setItem('fast_column_layout', JSON.stringify(COLUMN_DEFS));
+                renderTable();
+            }});
         }
 
         function toggleColMenu() { document.getElementById('col-dropdown').classList.toggle('hidden'); }
-        function toggleVisible(i) { COLUMN_DEFS[i].visible = !COLUMN_DEFS[i].visible; renderTable(); }
+        function toggleVisible(i) { COLUMN_DEFS[i].visible = !COLUMN_DEFS[i].visible; localStorage.setItem('fast_column_layout', JSON.stringify(COLUMN_DEFS)); renderTable(); }
         function handleSort(col) { if(SORT_COL === col) SORT_ASC = !SORT_ASC; else { SORT_COL = col; SORT_ASC = true; } renderTable(); }
         function instantSearch() { renderTable(); }
-        
-        function updateCounts() {
+        function updateCounts() { 
             const sIdx = HEADERS.indexOf("Status");
             if (sIdx === -1) return;
             const c = { all: UI_CACHE.length, comp: 0, awat: 0, test: 0 };
@@ -232,14 +220,7 @@
             document.getElementById('count-awat').innerText = c.awat;
             document.getElementById('count-test').innerText = c.test;
         }
-
-        function setView(v, el) { 
-            CURRENT_VIEW = v; 
-            document.getElementById('view-title').innerText = v;
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            el.classList.add('active');
-            renderTable(); 
-        }
+        function setView(v, el) { CURRENT_VIEW = v; document.getElementById('view-title').innerText = v; document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); renderTable(); }
         function logout() { localStorage.clear(); location.reload(); }
     </script>
 </body>

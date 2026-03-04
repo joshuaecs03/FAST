@@ -1,39 +1,77 @@
 /**
- * FAST | Audit Drawer Module
+ * FAST | Zendesk-Style High-Capacity Audit Drawer
  */
 
 (function initAuditModule() {
     const style = document.createElement('style');
     style.innerHTML = `
         #audit-drawer {
-            position: fixed; top: 0; right: -450px; width: 420px; height: 100vh;
-            background: white; border-left: 1px solid #E5E7EB; z-index: 2000;
-            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+            position: fixed; top: 0; right: -600px; width: 550px; height: 100vh;
+            background: #fff; border-left: 1px solid #d8dcde; z-index: 2000;
+            transition: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: -15px 0 45px rgba(0,0,0,0.15);
             display: flex; flex-direction: column;
+            font-family: 'Inter', -apple-system, sans-serif;
         }
         #audit-drawer.open { right: 0; }
-        .drawer-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-        .drawer-content { flex: 1; overflow-y: auto; padding: 20px; background: #F9FAFB; }
-        .timeline-item { position: relative; padding-left: 30px; margin-bottom: 25px; }
-        .timeline-item::before { 
-            content: ''; position: absolute; left: 0; top: 5px; 
-            width: 10px; height: 10px; border-radius: 50%; background: #D4631E; z-index: 2;
+        
+        .drawer-header { 
+            padding: 24px; border-bottom: 1px solid #d8dcde; 
+            display: flex; justify-content: space-between; align-items: flex-start;
+            background: #f8f9f9;
         }
-        .timeline-item::after { 
-            content: ''; position: absolute; left: 4px; top: 15px; 
-            width: 2px; height: calc(100% + 15px); background: #E5E7EB; z-index: 1;
+        .header-main h3 { margin: 0; font-size: 18px; color: #2f3337; font-weight: 600; }
+        .header-sub { font-size: 12px; color: #68737d; margin-top: 4px; display: block; }
+        
+        .status-pill {
+            display: inline-block; padding: 2px 8px; border-radius: 12px; 
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            background: #e4f0f6; color: #00608d; margin-top: 8px;
         }
-        .timeline-item:last-child::after { display: none; }
-        .msg-meta { font-size: 10px; color: #6B7280; margin-bottom: 6px; display: flex; justify-content: space-between; }
-        .msg-bubble { 
-            background: white; border: 1px solid #E5E7EB; padding: 12px; border-radius: 8px; font-size: 12px; line-height: 1.5; 
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05); max-height: 350px; overflow-y: auto;
+
+        .drawer-content { flex: 1; overflow-y: auto; padding: 30px; background: #fff; }
+
+        /* Timeline / Conversation Thread */
+        .thread-item { margin-bottom: 40px; position: relative; }
+        .thread-item::before {
+            content: ''; position: absolute; left: -24px; top: 4px;
+            width: 12px; height: 12px; border-radius: 50%;
+            border: 2px solid #fff; box-shadow: 0 0 0 2px #d8dcde;
         }
-        .msg-bubble.inbound { border-left: 4px solid #2563eb; }
-        .msg-bubble.outbound { border-left: 4px solid #D4631E; }
-        .msg-subject { font-weight: 700; display: block; margin-bottom: 5px; color: #111827; }
-        .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1999; display: none; backdrop-filter: blur(2px); }
+        .thread-item.outbound::before { background: #D4631E; box-shadow: 0 0 0 2px #D4631E; }
+        .thread-item.inbound::before { background: #2563eb; box-shadow: 0 0 0 2px #2563eb; }
+        
+        .msg-meta { font-size: 11px; color: #68737d; margin-bottom: 8px; font-weight: 500; }
+        .msg-card { 
+            border: 1px solid #d8dcde; border-radius: 4px; overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .msg-card-header { 
+            padding: 10px 15px; background: #f8f9f9; border-bottom: 1px solid #d8dcde;
+            font-weight: 600; font-size: 13px; color: #2f3337;
+        }
+        .msg-body { 
+            padding: 15px; font-size: 13px; color: #49545c; line-height: 1.6; 
+            white-space: pre-wrap; word-break: break-word; background: #fff;
+        }
+
+        .drawer-footer { 
+            padding: 20px; border-top: 1px solid #d8dcde; background: #f8f9f9;
+            display: flex; gap: 10px;
+        }
+        .btn-reply { 
+            flex: 1; background: #D4631E; color: #fff; border: none; padding: 12px; 
+            border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 13px;
+        }
+        .btn-secondary {
+            background: #fff; border: 1px solid #d8dcde; color: #2f3337; 
+            padding: 12px; border-radius: 4px; cursor: pointer; font-size: 13px;
+        }
+
+        .drawer-overlay { 
+            position: fixed; inset: 0; background: rgba(23, 26, 28, 0.4); 
+            z-index: 1999; display: none; backdrop-filter: blur(4px);
+        }
     `;
     document.head.appendChild(style);
 
@@ -44,11 +82,18 @@
     drawer.id = 'audit-drawer';
     drawer.innerHTML = `
         <div class="drawer-header">
-            <div><h3 id="audit-title" style="margin:0; font-size:16px;">Job History</h3><span id="audit-subtitle" style="font-size:11px; color:#6B7280;">File #: ---</span></div>
-            <button onclick="closeAuditDrawer()" style="background:none; border:none; font-size:28px; cursor:pointer; color:#9CA3AF;">&times;</button>
+            <div class="header-main">
+                <h3 id="audit-title">Job History</h3>
+                <span id="audit-subtitle" class="header-sub">File #: ---</span>
+                <div id="audit-status" class="status-pill">Active Claim</div>
+            </div>
+            <button onclick="closeAuditDrawer()" style="background:none; border:none; font-size:28px; cursor:pointer; color:#68737d;">&times;</button>
         </div>
         <div class="drawer-content" id="audit-timeline"></div>
-        <div style="padding:15px; border-top:1px solid #eee;"><button onclick="window.open('https://mail.google.com')" style="width:100%; background:#111827; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">Open Gmail to Reply</button></div>
+        <div class="drawer-footer">
+            <button class="btn-secondary" onclick="location.reload()">Refresh</button>
+            <button class="btn-reply" onclick="window.open('https://mail.google.com')">Reply via Gmail</button>
+        </div>
     `;
     document.body.appendChild(overlay); document.body.appendChild(drawer);
     overlay.onclick = closeAuditDrawer;
@@ -60,8 +105,8 @@ async function openAuditDrawer(fileNumber, fileName) {
     const timeline = document.getElementById('audit-timeline');
     
     document.getElementById('audit-title').innerText = fileName || 'Job History';
-    document.getElementById('audit-subtitle').innerText = `File #: ${fileNumber}`;
-    timeline.innerHTML = '<div style="text-align:center; padding-top:40px; color:#9CA3AF; font-size:12px;">Loading records...</div>';
+    document.getElementById('audit-subtitle').innerText = `TICKET #FT-${fileNumber}`;
+    timeline.innerHTML = '<div style="text-align:center; margin-top:100px; color:#68737d;">Fetching ticket history...</div>';
     
     drawer.classList.add('open');
     overlay.style.display = 'block';
@@ -73,26 +118,28 @@ async function openAuditDrawer(fileNumber, fileName) {
         if (json.result === "success" && json.history && json.history.length > 0) {
             timeline.innerHTML = '';
             json.history.forEach(row => {
-                // Column Data: 0:Timestamp, 2:Direction, 5:Subject, 6:Email Body
                 const date = new Date(row[0]).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
                 const isOutbound = String(row[2]).toUpperCase() === 'OUTBOUND';
                 
                 const item = document.createElement('div');
-                item.className = 'timeline-item';
+                item.className = `thread-item ${isOutbound ? 'outbound' : 'inbound'}`;
                 item.innerHTML = `
-                    <div class="msg-meta"><span>${isOutbound ? '📤 SENT' : '📥 RECEIVED'}</span><span>${date}</span></div>
-                    <div class="msg-bubble ${isOutbound ? 'outbound' : 'inbound'}">
-                        <span class="msg-subject">${row[5] || '(No Subject)'}</span>
-                        <div style="white-space: pre-wrap;">${row[6] || '(No Content)'}</div>
+                    <div class="msg-meta">
+                        <strong>${isOutbound ? 'You' : (row[7] || 'Customer')}</strong> 
+                        <span style="margin: 0 5px;">&bull;</span> ${date}
+                    </div>
+                    <div class="msg-card">
+                        <div class="msg-card-header">${row[5] || 'No Subject'}</div>
+                        <div class="msg-body">${row[6] || 'No content provided.'}</div>
                     </div>
                 `;
                 timeline.appendChild(item);
             });
         } else {
-            timeline.innerHTML = '<div style="text-align:center; padding-top:40px; color:#9CA3AF; font-size:12px;">No email history found for this file.</div>';
+            timeline.innerHTML = '<div style="text-align:center; margin-top:100px; color:#68737d; font-size:14px;">No messages found for this claim.</div>';
         }
     } catch (e) {
-        timeline.innerHTML = '<div style="color:#ef4444; font-size:12px; text-align:center;">Connection error. Please check Deployment.</div>';
+        timeline.innerHTML = '<div style="color:#d9393e; text-align:center; margin-top:100px;">Unable to load history. Verify script deployment.</div>';
     }
 }
 

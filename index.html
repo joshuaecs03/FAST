@@ -5,44 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAST | ECS Asbestos</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         :root { --ecs-orange: #D4631E; --ecs-dark: #111827; --ecs-border: #E5E7EB; --ecs-bg: #F9FAFB; --sidebar-width: 260px; }
         body { font-family: 'Inter', sans-serif; margin: 0; background: var(--ecs-bg); color: var(--ecs-dark); height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
 
-        /* OLD STYLE INTERFACE: BRANDED LOGIN */
+        /* Login Interface */
         #login-screen { text-align: center; padding-top: 15vh; height: 100vh; background: var(--ecs-bg); }
         .login-brand { font-family: 'Montserrat', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 8px; font-size: 3.5rem; color: #000; margin-bottom: 30px; }
         .login-brand span { color: var(--ecs-orange); }
         .login-card { width: 360px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        
         input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; outline: none; }
-        input:focus { border-color: var(--ecs-orange); }
-        #login-btn { width: 100%; padding: 16px; background: var(--ecs-orange); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; text-transform: uppercase; transition: 0.2s; }
-        #login-btn:hover { background: #b85418; }
+        #login-btn { width: 100%; padding: 16px; background: var(--ecs-orange); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; text-transform: uppercase; }
 
-        /* DASHBOARD STYLES */
+        /* Dashboard Layout */
         #dashboard { display: flex; height: 100vh; }
         #sidebar { width: var(--sidebar-width); background: #1F2937; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-header { padding: 25px; border-bottom: 1px solid #374151; }
         .sidebar-logo-small { font-family: 'Montserrat', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; font-size: 1.2rem; color: white; }
         .sidebar-logo-small span { color: var(--ecs-orange); }
-        
         .nav-label { font-size: 10px; color: #6B7280; padding: 20px 25px 5px 25px; text-transform: uppercase; font-weight: 600; }
-        .nav-item { padding: 14px 25px; cursor: pointer; font-size: 13px; color: #9CA3AF; border-left: 4px solid transparent; transition: 0.2s; }
+        .nav-item { padding: 14px 25px; cursor: pointer; font-size: 13px; color: #9CA3AF; border-left: 4px solid transparent; }
         .nav-item.active { background: #111827; color: white; border-left: 4px solid var(--ecs-orange); font-weight: 600; }
 
         #main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: white; }
         header { background: white; padding: 0 30px; height: 65px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
-        .controls-area { padding: 12px 30px; border-bottom: 1px solid var(--ecs-border); display: flex; align-items: center; gap: 15px; }
-        #searchBar { flex: 1; padding: 10px 20px; border: 1px solid var(--ecs-border); border-radius: 50px; outline: none; }
         
+        /* Controls & Column Gear Menu */
+        .controls-area { padding: 12px 30px; border-bottom: 1px solid var(--ecs-border); display: flex; align-items: center; gap: 15px; background: #fff; }
+        #searchBar { flex: 1; padding: 10px 20px; border: 1px solid var(--ecs-border); border-radius: 50px; outline: none; font-size: 14px; }
+        
+        .col-manager { position: relative; }
+        #col-btn { background: white; border: 1px solid var(--ecs-border); padding: 8px 18px; border-radius: 50px; cursor: pointer; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .col-dropdown { position: absolute; right: 0; top: 120%; background: white; border: 1px solid var(--ecs-border); border-radius: 12px; box-shadow: 0 15px 30px rgba(0,0,0,0.1); z-index: 100; width: 280px; padding: 15px; max-height: 450px; overflow-y: auto; }
+        .col-menu-actions { display: flex; gap: 10px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #eee; }
+        .col-menu-actions button { flex: 1; padding: 6px; font-size: 10px; cursor: pointer; border-radius: 4px; border: 1px solid #ddd; background: #f9f9f9; }
+        .col-item { display: flex; align-items: center; gap: 10px; padding: 8px; font-size: 12px; cursor: grab; border-radius: 6px; border-bottom: 1px solid #f9f9f9; }
+        .col-item:hover { background: #f3f4f6; }
+
+        /* Table Resizing & Layout */
         .table-wrapper { flex: 1; overflow: auto; margin: 15px; border: 1px solid var(--ecs-border); border-radius: 8px; }
-        table { border-collapse: separate; border-spacing: 0; font-size: 11px; width: max-content; min-width: 100%; }
-        th { background: #F9FAFB; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--ecs-border); padding: 12px; text-align: left; white-space: nowrap; font-weight: 700; color: #6B7280; text-transform: uppercase; font-size: 10px; }
-        td { padding: 12px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; border-right: 1px solid #f9f9f9; }
+        table { border-collapse: separate; border-spacing: 0; font-size: 11px; width: max-content; min-width: 100%; table-layout: fixed; }
+        th { background: #F9FAFB; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--ecs-border); border-right: 1px solid #eee; text-align: left; }
+        .th-content { padding: 12px; display: flex; align-items: center; position: relative; }
+        .resizer { width: 5px; height: 100%; position: absolute; right: 0; top: 0; cursor: col-resize; }
+        td { padding: 12px; border-bottom: 1px solid var(--ecs-border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-right: 1px solid #f9f9f9; }
         tr:hover td { background-color: #FFF9F5; }
-        #sync-status { font-size: 11px; color: #9CA3AF; }
     </style>
 </head>
 <body>
@@ -61,19 +70,28 @@
             <div class="sidebar-header"><div class="sidebar-logo-small">F<span>A</span>ST</div></div>
             <div class="nav-label">Data Views</div>
             <div class="nav-item active"><span>Xcelerate Portal</span></div>
-            <div style="margin-top:auto; padding:20px;">
-                <button onclick="logout()" style="width:100%; background:#374151; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer; font-size:12px;">Logout</button>
-            </div>
+            <div style="margin-top:auto; padding:20px;"><button onclick="logout()" style="width:100%; background:#374151; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer;">Logout</button></div>
         </nav>
 
         <main id="main-content">
             <header><h2 style="margin:0; font-size:1.2rem;">All Jobs</h2><div id="sync-status">Connecting...</div></header>
+            
             <div class="controls-area">
-                <input type="text" id="searchBar" oninput="renderTable()" placeholder="Search by Job Number, Name, or Status...">
+                <input type="text" id="searchBar" oninput="renderTable()" placeholder="Search data...">
+                <div class="col-manager">
+                    <button id="col-btn" onclick="toggleColMenu()">⚙ Columns</button>
+                    <div id="col-dropdown" class="col-dropdown hidden">
+                        <div class="col-menu-actions">
+                            <button onclick="selectAllCols(true)">Select All</button>
+                            <button onclick="selectAllCols(false)">Clear All</button>
+                            <button onclick="resetDefaultCols()">Defaults</button>
+                        </div>
+                        <div id="col-list"></div>
+                    </div>
+                </div>
             </div>
-            <div class="table-wrapper" id="table-output">
-                <p style="padding:20px; color:#666;">Synchronizing with Xcelerate Data...</p>
-            </div>
+
+            <div class="table-wrapper"><div id="table-output"></div></div>
         </main>
     </div>
 
@@ -83,31 +101,30 @@
         let UI_CACHE = JSON.parse(localStorage.getItem('fast_data_cache') || "[]");
         let ROW_HASHES = JSON.parse(localStorage.getItem('fast_hash_cache') || "{}");
         let HEADERS = JSON.parse(localStorage.getItem('fast_headers_cache') || "[]");
-        
-        // Priority Columns to show from your 150+ list
-        const PRIORITY_COLS = ["File Number", "File Name", "Status", "Customer Name", "Loss Address", "Insurance Company", "Total Invoice"];
+        let COLUMN_DEFS = [];
+
+        const DEFAULT_COLS = ["File Number", "File Name", "Status", "Customer Name", "Loss Address", "Insurance Company", "Total Invoice"];
 
         window.onload = () => { if (localStorage.getItem("fast_active") === "true") showDashboard(); };
 
         async function handleLogin() {
             const u = document.getElementById('u').value.trim(), p = document.getElementById('p').value.trim();
-            if(!u || !p) return alert("Please fill in both fields.");
-            const btn = document.getElementById('login-btn');
-            btn.innerText = "AUTHENTICATING...";
+            if(!u || !p) return;
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`, { method: 'GET', mode: 'cors', redirect: 'follow' });
                 const data = await res.json();
                 if(data.result === "success") { localStorage.setItem("fast_active", "true"); showDashboard(); } 
-                else { alert(data.reason); btn.innerText = "SIGN IN"; }
-            } catch (e) { alert("Network Error"); btn.innerText = "SIGN IN"; }
+                else { alert(data.reason); }
+            } catch (e) { alert("Login Error"); }
         }
 
         function showDashboard() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
-            if(UI_CACHE.length > 0) renderTable();
+            if(UI_CACHE.length > 0) { loadColumnSettings(); renderTable(); renderColMenu(); }
             performSurgicalSync();
             setInterval(performSurgicalSync, 30000);
+            initSortable();
         }
 
         async function performSurgicalSync() {
@@ -117,7 +134,8 @@
                 if (json.result === "success") {
                     HEADERS = json.headers;
                     localStorage.setItem('fast_headers_cache', JSON.stringify(HEADERS));
-                    if (json.updates && json.updates.length > 0) {
+                    if (COLUMN_DEFS.length === 0) { loadColumnSettings(); renderColMenu(); }
+                    if (json.updates.length > 0) {
                         const fIdx = HEADERS.indexOf("File Number");
                         json.updates.forEach(up => {
                             const fId = fIdx !== -1 ? String(up.data[fIdx]) : "row-" + Math.random();
@@ -129,28 +147,67 @@
                         localStorage.setItem('fast_hash_cache', JSON.stringify(ROW_HASHES));
                         renderTable();
                     }
-                    document.getElementById('sync-status').innerText = "✓ Connected | " + UI_CACHE.length + " Jobs";
+                    document.getElementById('sync-status').innerText = "✓ Live: " + new Date().toLocaleTimeString();
                 }
             } catch (e) { document.getElementById('sync-status').innerText = "⚠ Sync Error"; }
         }
 
+        function loadColumnSettings() {
+            const saved = localStorage.getItem('fast_col_layout');
+            if (saved) {
+                COLUMN_DEFS = JSON.parse(saved).filter(c => HEADERS.includes(c.name));
+                HEADERS.forEach(h => { if (!COLUMN_DEFS.find(c => c.name === h)) COLUMN_DEFS.push({ name: h, visible: false, width: 140 }); });
+            } else {
+                COLUMN_DEFS = HEADERS.map(h => ({ name: h, visible: DEFAULT_COLS.includes(h), width: 140 }));
+            }
+        }
+
         function renderTable() {
-            if(!HEADERS || HEADERS.length === 0) return;
+            const visible = COLUMN_DEFS.filter(d => d.visible);
             const q = document.getElementById("searchBar").value.toUpperCase();
-            
-            // Map headers to show priority ones or all if searching
-            const visibleIndices = HEADERS.map((h, i) => PRIORITY_COLS.includes(h) || q.length > 0 ? i : -1).filter(i => i !== -1);
             let filtered = UI_CACHE.filter(r => r.join(" ").toUpperCase().includes(q));
 
             let html = `<table><thead><tr>`;
-            visibleIndices.forEach(i => html += `<th>${HEADERS[i]}</th>`);
+            visible.forEach(def => html += `<th style="width:${def.width}px"><div class="th-content"><span>${def.name}</span></div></th>`);
             html += `</tr></thead><tbody>`;
             filtered.forEach(r => {
                 html += `<tr>`;
-                visibleIndices.forEach(i => html += `<td>${r[i] || ''}</td>`);
+                visible.forEach(def => html += `<td>${r[HEADERS.indexOf(def.name)] || ''}</td>`);
                 html += `</tr>`;
             });
             document.getElementById('table-output').innerHTML = html + `</tbody></table>`;
+        }
+
+        function toggleColMenu() { document.getElementById('col-dropdown').classList.toggle('hidden'); }
+
+        function renderColMenu() {
+            let html = '';
+            COLUMN_DEFS.forEach((def, i) => {
+                html += `<div class="col-item" data-id="${i}">
+                    <input type="checkbox" ${def.visible ? 'checked' : ''} onchange="toggleVis(${i})">
+                    <span>${def.name}</span>
+                </div>`;
+            });
+            document.getElementById('col-list').innerHTML = html;
+        }
+
+        function toggleVis(i) { COLUMN_DEFS[i].visible = !COLUMN_DEFS[i].visible; saveCols(); renderTable(); }
+        
+        function selectAllCols(state) { COLUMN_DEFS.forEach(c => c.visible = state); saveCols(); renderTable(); renderColMenu(); }
+        
+        function resetDefaultCols() { COLUMN_DEFS.forEach(c => c.visible = DEFAULT_COLS.includes(c.name)); saveCols(); renderTable(); renderColMenu(); }
+
+        function saveCols() { localStorage.setItem('fast_col_layout', JSON.stringify(COLUMN_DEFS)); }
+
+        function initSortable() {
+            new Sortable(document.getElementById('col-list'), {
+                animation: 150,
+                onEnd: (evt) => {
+                    const moved = COLUMN_DEFS.splice(evt.oldIndex, 1)[0];
+                    COLUMN_DEFS.splice(evt.newIndex, 0, moved);
+                    saveCols(); renderTable();
+                }
+            });
         }
 
         function logout() { localStorage.clear(); location.reload(); }

@@ -13,18 +13,8 @@
 
         #dashboard { display: flex; height: 100vh; position: relative; }
         
-        /* SIDEBAR - Responsive */
-        #sidebar { 
-            width: var(--sidebar-width); 
-            background: #1F2937; 
-            color: white; 
-            display: flex; 
-            flex-direction: column; 
-            flex-shrink: 0; 
-            transition: transform 0.3s ease;
-            z-index: 1000;
-        }
-
+        /* SIDEBAR */
+        #sidebar { width: var(--sidebar-width); background: #1F2937; color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease; z-index: 1000; }
         .sidebar-header { padding: 30px; border-bottom: 1px solid #374151; display: flex; justify-content: space-between; align-items: center; }
         .sidebar-logo { font-family: 'Montserrat', sans-serif; color: white; font-weight: 700; text-transform: uppercase; letter-spacing: 4px; font-size: 1.6rem; }
         .sidebar-logo span { color: var(--ecs-orange); }
@@ -35,8 +25,6 @@
         .nav-count { font-size: 10px; background: #374151; color: #9CA3AF; padding: 2px 8px; border-radius: 10px; }
 
         #main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: white; width: 100%; }
-        
-        /* HEADER - Responsive */
         header { background: white; padding: 0 20px; height: 70px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ecs-border); }
         .menu-toggle { display: none; background: none; border: none; font-size: 24px; cursor: pointer; padding: 10px; }
 
@@ -44,9 +32,22 @@
         #searchBar { flex: 1; padding: 10px 15px; border: 1px solid var(--ecs-border); border-radius: 50px; outline: none; font-size: 14px; }
         
         #col-btn { background: white; border: 1px solid var(--ecs-border); padding: 8px 15px; border-radius: 50px; cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap; }
-        .col-dropdown { position: absolute; right: 20px; top: 130px; background: white; border: 1px solid var(--ecs-border); border-radius: 12px; box-shadow: 0 15px 30px rgba(0,0,0,0.1); z-index: 100; width: 250px; padding: 10px; max-height: 400px; overflow-y: auto; }
+        
+        /* UPDATED COLUMN MANAGER UI */
+        .col-dropdown { position: absolute; right: 20px; top: 130px; background: white; border: 1px solid var(--ecs-border); border-radius: 12px; box-shadow: 0 15px 30px rgba(0,0,0,0.1); z-index: 100; width: 300px; padding: 0; max-height: 500px; display: flex; flex-direction: column; }
+        .col-drop-header { padding: 15px; border-bottom: 1px solid #eee; background: #fff; border-radius: 12px 12px 0 0; }
+        .col-search { width: 100%; padding: 8px 12px; border: 1px solid #eee; border-radius: 6px; font-size: 12px; margin-bottom: 10px; outline: none; box-sizing: border-box; }
+        .col-actions { display: flex; gap: 10px; margin-bottom: 5px; }
+        .col-action-btn { flex: 1; background: #f3f4f6; border: none; padding: 6px; border-radius: 4px; font-size: 10px; font-weight: 600; cursor: pointer; color: #4B5563; }
+        .col-action-btn:hover { background: #e5e7eb; }
+        
+        #col-list { overflow-y: auto; padding: 5px 10px 10px 10px; }
+        .col-item { display: flex; align-items: center; gap: 10px; padding: 8px; font-size: 12px; border-radius: 6px; background: white; }
+        .drag-handle { cursor: grab; color: #ccc; font-weight: bold; font-size: 18px; padding-right: 5px; user-select: none; }
+        .col-item:hover { background: #f3f4f6; }
+        .sortable-ghost { opacity: 0.4; background: #FFF9F5 !important; }
 
-        /* TABLE - Responsive */
+        /* TABLE LAYOUT */
         .table-wrapper { flex: 1; overflow: auto; margin: 10px; border: 1px solid var(--ecs-border); border-radius: 8px; -webkit-overflow-scrolling: touch; }
         table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; font-size: 11px; table-layout: fixed; } 
         th { background: #F9FAFB; padding: 0; position: sticky; top: 0; text-align: left; z-index: 10; border-bottom: 2px solid var(--ecs-border); border-right: 1px solid #f0f0f0; }
@@ -54,23 +55,18 @@
         .resizer { width: 8px; height: 100%; position: absolute; right: 0; top: 0; cursor: col-resize; z-index: 11; }
         td { padding: 10px 15px; border-bottom: 1px solid var(--ecs-border); color: #374151; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* MOBILE OVERLAY */
         #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
 
-        /* MOBILE MEDIA QUERIES */
         @media (max-width: 768px) {
             #sidebar { position: fixed; height: 100%; transform: translateX(-100%); }
             #sidebar.open { transform: translateX(0); }
             .menu-toggle { display: block; }
             #overlay.open { display: block; }
-            header h2 { font-size: 18px; }
-            .sidebar-header { padding: 20px; }
-            .nav-item { padding: 12px 20px; }
-            .controls-area { padding: 10px; }
+            .col-dropdown { right: 10px; width: 280px; }
         }
 
-        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: #f3f4f6; padding: 20px; }
-        .login-card { background: white; padding: 40px; border-radius: 12px; width: 100%; max-width: 340px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: #f3f4f6; }
+        .login-card { background: white; padding: 40px; border-radius: 12px; width: 340px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
@@ -112,8 +108,17 @@
             <div class="controls-area">
                 <input type="text" id="searchBar" oninput="instantSearch()" placeholder="Search data...">
                 <div class="col-manager">
-                    <button id="col-btn" onclick="toggleColMenu()">⚙</button>
-                    <div id="col-dropdown" class="col-dropdown hidden"><div id="col-list"></div></div>
+                    <button id="col-btn" onclick="toggleColMenu()">⚙ Columns</button>
+                    <div id="col-dropdown" class="col-dropdown hidden">
+                        <div class="col-drop-header">
+                            <input type="text" class="col-search" id="colSearch" oninput="filterColMenu()" placeholder="Find a column...">
+                            <div class="col-actions">
+                                <button class="col-action-btn" onclick="bulkToggleCols(true)">Show All</button>
+                                <button class="col-action-btn" onclick="bulkToggleCols(false)">Hide All</button>
+                            </div>
+                        </div>
+                        <div id="col-list"></div>
+                    </div>
                 </div>
             </div>
             <div class="table-wrapper"><div id="table-output"></div></div>
@@ -141,7 +146,6 @@
             } 
         };
 
-        // MOBILE MENU TOGGLE
         function toggleMenu() {
             document.getElementById('sidebar').classList.toggle('open');
             document.getElementById('overlay').classList.toggle('open');
@@ -149,11 +153,9 @@
 
         async function handleLogin() {
             const u = document.getElementById('u').value, p = document.getElementById('p').value;
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
-                const data = await res.json();
-                if(data.result === "success") { localStorage.setItem("fast_active", "true"); init(); } else alert("Denied");
-            } catch(e) { alert("Login Error"); }
+            const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
+            const data = await res.json();
+            if(data.result === "success") { localStorage.setItem("fast_active", "true"); init(); } else alert("Denied");
         }
 
         async function init() {
@@ -221,12 +223,52 @@
             document.getElementById('table-output').innerHTML = html + `</tbody></table>`;
         }
 
+        // --- UPDATED COLUMN MENU RENDER & FILTER ---
+        function renderColMenu() {
+            let html = '';
+            COLUMN_DEFS.forEach((def, i) => {
+                html += `<div class="col-item" data-id="${i}" data-name="${def.name.toLowerCase()}">
+                    <span class="drag-handle">::</span>
+                    <input type="checkbox" ${def.visible ? 'checked' : ''} onchange="toggleVisible(${i})">
+                    <span style="flex:1">${def.name}</span>
+                </div>`;
+            });
+            document.getElementById('col-list').innerHTML = html;
+        }
+
+        function filterColMenu() {
+            const q = document.getElementById('colSearch').value.toLowerCase();
+            document.querySelectorAll('.col-item').forEach(item => {
+                item.style.display = item.dataset.name.includes(q) ? 'flex' : 'none';
+            });
+        }
+
+        function bulkToggleCols(show) {
+            COLUMN_DEFS.forEach(def => def.visible = show);
+            localStorage.setItem('fast_column_layout', JSON.stringify(COLUMN_DEFS));
+            renderTable();
+            renderColMenu();
+        }
+
+        function initSortable() {
+            new Sortable(document.getElementById('col-list'), {
+                handle: '.drag-handle',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                onEnd: (evt) => {
+                    const moved = COLUMN_DEFS.splice(evt.oldIndex, 1)[0];
+                    COLUMN_DEFS.splice(evt.newIndex, 0, moved);
+                    localStorage.setItem('fast_column_layout', JSON.stringify(COLUMN_DEFS));
+                    renderTable();
+                }
+            });
+        }
+
         let currentResizer = null, startX, startWidth, colNameForResize;
         function startResize(e, name) { e.stopPropagation(); colNameForResize = name; startX = e.pageX; const def = COLUMN_DEFS.find(d => d.name === name); startWidth = def.width; document.addEventListener('mousemove', handleMouseMove); document.addEventListener('mouseup', stopResize); document.body.classList.add('resizing'); }
         function handleMouseMove(e) { const diff = e.pageX - startX; const def = COLUMN_DEFS.find(d => d.name === colNameForResize); def.width = Math.max(50, startWidth + diff); renderTable(); }
         function stopResize() { document.removeEventListener('mousemove', handleMouseMove); document.removeEventListener('mouseup', stopResize); document.body.classList.remove('resizing'); localStorage.setItem('fast_column_layout', JSON.stringify(COLUMN_DEFS)); }
-        function renderColMenu() { let html = ''; COLUMN_DEFS.forEach((def, i) => html += `<div class="col-item" data-id="${i}"><input type="checkbox" ${def.visible ? 'checked' : ''} onchange="toggleVisible(${i})"><span>${def.name}</span></div>`); document.getElementById('col-list').innerHTML = html; }
-        function initSortable() { new Sortable(document.getElementById('col-list'), { animation: 150, onEnd: (evt) => { const moved = COLUMN_DEFS.splice(evt.oldIndex, 1)[0]; COLUMN_DEFS.splice(evt.newIndex, 0, moved); localStorage.setItem('fast_column_layout', JSON.stringify(COLUMN_DEFS)); renderTable(); }}); }
+        
         function toggleColMenu() { document.getElementById('col-dropdown').classList.toggle('hidden'); }
         function toggleVisible(i) { COLUMN_DEFS[i].visible = !COLUMN_DEFS[i].visible; localStorage.setItem('fast_column_layout', JSON.stringify(COLUMN_DEFS)); renderTable(); }
         function handleSort(col) { if(SORT_COL === col) SORT_ASC = !SORT_ASC; else { SORT_COL = col; SORT_ASC = true; } renderTable(); }
@@ -245,14 +287,7 @@
             document.getElementById('count-awat').innerText = c.awat;
             document.getElementById('count-test').innerText = c.test;
         }
-        function setView(v, el) { 
-            CURRENT_VIEW = v; 
-            document.getElementById('view-title').innerText = v;
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            el.classList.add('active');
-            if (window.innerWidth <= 768) toggleMenu(); // Close menu on mobile after selection
-            renderTable(); 
-        }
+        function setView(v, el) { CURRENT_VIEW = v; document.getElementById('view-title').innerText = v; document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); if (window.innerWidth <= 768) toggleMenu(); renderTable(); }
         function logout() { localStorage.clear(); location.reload(); }
     </script>
 </body>
